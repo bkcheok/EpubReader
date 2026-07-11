@@ -155,6 +155,28 @@ data class EpubBook(
 }
 
 /**
+ * Table of Contents item
+ */
+@Serializable
+data class TocItem(
+    val title: String,
+    val href: String,
+    val children: List<TocItem> = emptyList(),
+    val level: Int = 0
+)
+
+/**
+ * Manifest item from EPUB OPF
+ */
+@Serializable
+data class ManifestItem(
+    val id: String,
+    val href: String,
+    val mediaType: String,
+    val properties: String = ""
+)
+
+/**
  * EPUB Reading settings
  */
 @Serializable
@@ -166,7 +188,7 @@ data class EpubSettings(
     val scrollMode: ScrollMode = ScrollMode.VERTICAL,
     val fontFamily: String = "sans-serif",
     val textAlign: TextAlignment = TextAlignment.JUSTIFY,
-    val brightness: Float = -1f, // -1 = system
+    val brightness: Float = -1f,
     val keepScreenOn: Boolean = false,
     val showPageNumbers: Boolean = true,
     val showProgress: Boolean = true,
