@@ -17,14 +17,14 @@
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:theme="@style/Theme.EpubReader.AppBarOverlay">
+            android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar">
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="?attr/colorPrimary"
-                app:popupTheme="@style/Theme.EpubReader.PopupOverlay" />
+                app:popupTheme="@style/ThemeOverlay.Material3.Light" />
 
         </com.google.android.material.appbar.AppBarLayout>
 
@@ -41,7 +41,7 @@
 
             <ProgressBar
                 android:id="@+id/web_progress_bar"
-                style="?android:attr/progressBarStyleHorizontal"
+                style="@android:style/Widget.ProgressBar.Horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="3dp"
                 android:progressDrawable="@drawable/progress_bar"
@@ -54,7 +54,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_margin="@dimen/fab_margin"
+            android:layout_margin="16dp"
             android:contentDescription="@string/tts_toggle"
             android:src="@android:drawable/ic_media_play"
             app:backgroundTint="@color/tts_playing" />

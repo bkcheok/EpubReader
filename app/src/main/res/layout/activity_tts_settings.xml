@@ -8,14 +8,14 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/Theme.EpubReader.AppBarOverlay">
+        android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:popupTheme="@style/Theme.EpubReader.PopupOverlay"
+            app:popupTheme="@style/ThemeOverlay.Material3.Light"
             app:title="@string/tts_settings" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:padding="@dimen/margin_normal">
+        android:padding="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -37,7 +37,7 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/margin_normal"
+                android:layout_marginBottom="16dp"
                 android:hint="@string/tts_language">
 
                 <AutoCompleteTextView
@@ -54,7 +54,7 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/margin_normal"
+                android:layout_marginBottom="16dp"
                 android:hint="@string/tts_voice">
 
                 <AutoCompleteTextView
@@ -71,7 +71,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginBottom="@dimen/margin_normal">
+                android:layout_marginBottom="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -83,15 +83,15 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/tts_speech_rate"
-                        android:textSize="@dimen/text_size_normal"
-                        android:layout_marginEnd="@dimen/margin_normal" />
+                        android:textSize="16sp"
+                        android:layout_marginEnd="16dp" />
 
                     <TextView
                         android:id="@+id/tv_speech_rate_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="1.0x"
-                        android:textSize="@dimen/text_size_normal"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                 </LinearLayout>
@@ -110,7 +110,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginBottom="@dimen/margin_normal">
+                android:layout_marginBottom="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -122,15 +122,15 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/tts_pitch"
-                        android:textSize="@dimen/text_size_normal"
-                        android:layout_marginEnd="@dimen/margin_normal" />
+                        android:textSize="16sp"
+                        android:layout_marginEnd="16dp" />
 
                     <TextView
                         android:id="@+id/tv_pitch_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="1.0"
-                        android:textSize="@dimen/text_size_normal"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                 </LinearLayout>
@@ -149,7 +149,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginBottom="@dimen/margin_normal">
+                android:layout_marginBottom="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -161,15 +161,15 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/tts_playback_speed"
-                        android:textSize="@dimen/text_size_normal"
-                        android:layout_marginEnd="@dimen/margin_normal" />
+                        android:textSize="16sp"
+                        android:layout_marginEnd="16dp" />
 
                     <TextView
                         android:id="@+id/tv_playback_speed_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="1.0x"
-                        android:textSize="@dimen/text_size_normal"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                 </LinearLayout>
@@ -189,8 +189,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Test TTS"
-                android:layout_marginTop="@dimen/margin_large"
-                android:layout_marginBottom="@dimen/margin_normal"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp"
                 app:icon="@android:drawable/ic_media_play" />
 
             <!-- Reset Button -->

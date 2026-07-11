@@ -85,7 +85,7 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/tts_settings_title">
+    <PreferenceCategory app:title="@string/tts_settings">
         <ListPreference
             app:key="tts_language"
             app:title="@string/tts_language"
@@ -138,7 +138,7 @@
             app:defaultValue="true" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/about_section">
+    <PreferenceCategory app:title="@string/about">
         <Preference
             app:key="about"
             app:title="@string/about"
