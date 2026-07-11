@@ -21,16 +21,18 @@ import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -50,24 +52,20 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
-    
-    // WebView for EPUB content
+
     private lateinit var webView: WebView
     private lateinit var webProgressBar: ProgressBar
-    
-    // TTS Service
+
     private var ttsService: TtsService? = null
     private var isBound = false
     private var ttsCallbackId = -1
     private lateinit var ttsBottomSheet: View
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
-    
-    // State
+
     private var currentBook: EpubBook? = null
     private var currentChapterIndex = 0
     private var epubSettings = EpubSettings()
-    
-    // Permissions
+
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -78,19 +76,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private val filePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        uri?.let { loadEpub(it) }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
+
         setupToolbar()
         setupDrawer()
         setupNavigation()
         setupWebView()
         setupTtsBottomSheet()
         setupFab()
-        
-        // Check if we have an EPUB URI from intent
+
         intent.data?.let { uri ->
             if (uri.toString().endsWith(".epub") || uri.toString().contains("epub")) {
                 loadEpub(uri)
@@ -107,19 +110,19 @@ class MainActivity : AppCompatActivity() {
     private fun setupDrawer() {
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
-        
+
         appBarConfiguration = AppBarConfiguration(
             setOf(R.id.nav_library, R.id.nav_recent, R.id.nav_tts, R.id.nav_settings),
             drawerLayout
         )
-        
-        val toggle = ActionBarDrawerToggle(
+
+        val toggle = androidx.appcompat.app.ActionBarDrawerToggle(
             this, drawerLayout, binding.toolbar,
             R.string.navigation_drawer_open, R.string.navigation_drawer_close
         )
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
-        
+
         navView.setNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_library -> navController.navigate(R.id.nav_library)
@@ -143,7 +146,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupWebView() {
         webView = binding.webView
         webProgressBar = binding.webProgressBar
-        
+
         val settings = webView.settings
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
@@ -158,18 +161,16 @@ class MainActivity : AppCompatActivity() {
         settings.displayZoomControls = false
         settings.textZoom = 100
         settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.TEXT_AUTOSIZING
-        
-        // Enable Chinese font support
+
         settings.standardFontFamily = "sans-serif"
         settings.sansSerifFontFamily = "sans-serif"
         settings.serifFontFamily = "serif"
         settings.monospaceFontFamily = "monospace"
         settings.cursiveFontFamily = "cursive"
         settings.fantasyFontFamily = "fantasy"
-        
-        // User agent for better compatibility
+
         settings.userAgentString = "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36"
-        
+
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
                 if (url.startsWith("epub://") || url.startsWith("file://")) {
@@ -181,29 +182,28 @@ class MainActivity : AppCompatActivity() {
                 }
                 return false
             }
-            
+
             override fun onPageStarted(view: WebView, url: String, favicon: android.graphics.Bitmap?) {
                 webProgressBar.visibility = View.VISIBLE
             }
-            
+
             override fun onPageFinished(view: WebView, url: String) {
                 webProgressBar.visibility = View.GONE
                 applyReadingSettings()
                 updateChapterProgress()
             }
-            
+
             override fun onReceivedError(view: WebView, request: android.webkit.WebResourceRequest?, error: android.webkit.WebResourceError) {
                 webProgressBar.visibility = View.GONE
             }
         }
-        
+
         webView.webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(view: WebView, newProgress: Int) {
                 webProgressBar.progress = newProgress
             }
         }
-        
-        // Add JavaScript interface for TTS highlighting
+
         webView.addJavascriptInterface(WebAppInterface(this), "Android")
     }
 
@@ -211,7 +211,7 @@ class MainActivity : AppCompatActivity() {
         ttsBottomSheet = binding.ttsBottomSheet
         bottomSheetBehavior = BottomSheetBehavior.from(ttsBottomSheet)
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-        
+
         binding.btnTtsPlayPause.setOnClickListener { toggleTts() }
         binding.btnTtsStop.setOnClickListener { stopTts() }
         binding.btnTtsPrevious.setOnClickListener { previousChapter() }
@@ -232,12 +232,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openFilePicker() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-            addCategory(Intent.CATEGORY_OPENABLE)
-            type = "application/epub+zip"
-            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("application/epub+zip", "application/octet-stream"))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
+                filePickerLauncher.launch(arrayOf("application/epub+zip", "application/octet-stream"))
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES)
+            }
+        } else {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                filePickerLauncher.launch(arrayOf("application/epub+zip", "application/octet-stream"))
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
         }
-        startActivityForResult(intent, REQUEST_OPEN_EPUB)
     }
 
     private fun loadEpub(uri: Uri) {
@@ -248,7 +255,7 @@ class MainActivity : AppCompatActivity() {
                 val book = parser.parseFromUri(uri)
                 currentBook = book
                 currentChapterIndex = 0
-                
+
                 runOnUiThread {
                     displayChapter(0)
                     updateNavHeader()
@@ -286,7 +293,7 @@ class MainActivity : AppCompatActivity() {
             ReadingTheme.SEPIA -> "sepia"
             else -> "light"
         }
-        
+
         return """
             <!DOCTYPE html>
             <html>
@@ -324,16 +331,11 @@ class MainActivity : AppCompatActivity() {
                     .chapter-title { font-size: 1.5em; font-weight: bold; margin-bottom: 1em; text-align: center; }
                     .tts-highlight { background-color: #fff3cd; border-radius: 2px; }
                     @media (prefers-color-scheme: dark) {
-                        :root:not([data-theme="light"]) {
-                            --bg-color: #121212;
-                            --text-color: #e0e0e0;
-                            --heading-color: #ffffff;
-                            --link-color: #64b5f6;
-                        }
+                        body:not(.sepia):not(.dark) { background: #121212; color: #e0e0e0; }
                     }
                 </style>
             </head>
-            <body data-theme="${theme}">
+            <body class="$theme">
                 <div class="chapter-title">${chapter.title}</div>
                 ${chapter.content}
             </body>
@@ -346,19 +348,19 @@ class MainActivity : AppCompatActivity() {
         "sepia" -> "#fdf6e3"
         else -> "#ffffff"
     }
-    
+
     private fun getTextColor(theme: String): String = when (theme) {
         "dark" -> "#e0e0e0"
         "sepia" -> "#3c2e1e"
         else -> "#1a1a1a"
     }
-    
+
     private fun getHeadingColor(theme: String): String = when (theme) {
         "dark" -> "#ffffff"
         "sepia" -> "#1a1a1a"
         else -> "#1a1a1a"
     }
-    
+
     private fun getLinkColor(theme: String): String = when (theme) {
         "dark" -> "#64b5f6"
         "sepia" -> "#8b4513"
@@ -383,7 +385,6 @@ class MainActivity : AppCompatActivity() {
     private fun updateChapterProgress() {
         currentBook?.let { book ->
             val progress = ((currentChapterIndex + 1) * 100 / book.chapterCount)
-            // Update progress in UI
         }
     }
 
@@ -402,7 +403,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // TTS Controls
     private fun startTts() {
         currentBook?.let { book ->
             val chapter = book.getChapterAt(currentChapterIndex)
@@ -474,7 +474,7 @@ class MainActivity : AppCompatActivity() {
             val binder = service as TtsService.LocalBinder
             ttsService = binder.getService()
             isBound = true
-            
+
             ttsCallbackId = ttsService?.registerCallback(object : TtsService.TtsCallback {
                 override fun onInit(success: Boolean) {
                     runOnUiThread { updateTtsButtons() }
@@ -483,9 +483,8 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread { updateTtsButtons() }
                 }
                 override fun onDoneSpeaking(utteranceId: String) {
-                    runOnUiThread { 
+                    runOnUiThread {
                         updateTtsButtons()
-                        // Auto-advance chapter in UI
                         if (currentBook != null && currentChapterIndex < currentBook!!.chapterCount - 1) {
                             currentChapterIndex++
                             displayChapter(currentChapterIndex)
@@ -509,7 +508,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }) ?: -1
         }
-        
+
         override fun onServiceDisconnected(name: ComponentName) {
             isBound = false
             ttsService = null
@@ -614,7 +613,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showSearchDialog() {
-        // Implement search within book
         Toast.makeText(this, "Search coming soon", Toast.LENGTH_SHORT).show()
     }
 

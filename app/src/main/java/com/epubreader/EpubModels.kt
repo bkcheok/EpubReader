@@ -4,9 +4,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import kotlinx.serialization.Serializable
 
-/**
- * Represents a chapter in an EPUB book
- */
 @Serializable
 data class EpubChapter(
     val id: String,
@@ -45,29 +42,20 @@ data class EpubChapter(
     }
 }
 
-/**
- * Parcelable wrapper for EpubChapter to pass in Intents
- */
-class ParcelableEpubChapter(val chapter: EpubChapter) : Parcelable {
-    constructor(parcel: Parcel) : this(parcel.readParcelable(EpubChapter::class.java.classLoader)!!)
+data class TocItem(
+    val title: String,
+    val href: String,
+    val children: List<TocItem> = emptyList(),
+    val level: Int = 0
+)
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeParcelable(chapter, flags)
-    }
+data class ManifestItem(
+    val id: String,
+    val href: String,
+    val mediaType: String,
+    val properties: String = ""
+)
 
-    override fun describeContents(): Int = 0
-
-    companion object CREATOR : Parcelable.Creator<ParcelableEpubChapter> {
-        override fun createFromParcel(parcel: Parcel): ParcelableEpubChapter = ParcelableEpubChapter(parcel)
-        override fun newArray(size: Int): Array<ParcelableEpubChapter?> = arrayOfNulls(size)
-    }
-}
-
-fun ParcelableEpubChapter.toEpubChapter(): EpubChapter = chapter
-
-/**
- * Represents an EPUB book with metadata and chapters
- */
 @Serializable
 data class EpubBook(
     val id: String = "",
@@ -154,31 +142,18 @@ data class EpubBook(
         get() = flattenedChapters.size
 }
 
-/**
- * Table of Contents item
- */
-@Serializable
-data class TocItem(
-    val title: String,
-    val href: String,
-    val children: List<TocItem> = emptyList(),
-    val level: Int = 0
-)
+enum class ReadingTheme {
+    LIGHT, DARK, SEPIA, SYSTEM
+}
 
-/**
- * Manifest item from EPUB OPF
- */
-@Serializable
-data class ManifestItem(
-    val id: String,
-    val href: String,
-    val mediaType: String,
-    val properties: String = ""
-)
+enum class ScrollMode {
+    VERTICAL, HORIZONTAL, PAGE
+}
 
-/**
- * EPUB Reading settings
- */
+enum class TextAlignment {
+    LEFT, CENTER, RIGHT, JUSTIFY
+}
+
 @Serializable
 data class EpubSettings(
     val fontSize: Float = 16f,
@@ -188,7 +163,7 @@ data class EpubSettings(
     val scrollMode: ScrollMode = ScrollMode.VERTICAL,
     val fontFamily: String = "sans-serif",
     val textAlign: TextAlignment = TextAlignment.JUSTIFY,
-    val brightness: Float = -1f,
+    val brightness: Float = -1f, // -1 = system
     val keepScreenOn: Boolean = false,
     val showPageNumbers: Boolean = true,
     val showProgress: Boolean = true,
@@ -203,28 +178,10 @@ data class EpubSettings(
     val ttsSkipFootnotes: Boolean = true
 )
 
-enum class ReadingTheme {
-    LIGHT, DARK, SEPIA, SYSTEM
-}
-
-enum class ScrollMode {
-    VERTICAL, HORIZONTAL, PAGE
-}
-
-enum class TextAlignment {
-    LEFT, CENTER, RIGHT, JUSTIFY
-}
-
-/**
- * TTS State for UI binding
- */
 enum class TtsState {
     IDLE, PLAYING, PAUSED, STOPPED, ERROR
 }
 
-/**
- * TTS Playback info for UI
- */
 data class TtsPlaybackInfo(
     val state: TtsState = TtsState.IDLE,
     val currentChapterIndex: Int = 0,

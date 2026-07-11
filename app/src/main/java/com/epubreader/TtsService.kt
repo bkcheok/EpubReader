@@ -21,10 +21,6 @@ import androidx.core.app.NotificationCompat
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * Foreground Service for Text-to-Speech playback with media controls
- * Supports Chinese (Mandarin Simplified/Traditional) and English
- */
 class TtsService : Service(), TextToSpeech.OnInitListener {
 
     companion object {
@@ -32,7 +28,6 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         const val CHANNEL_ID = "tts_playback_channel"
         const val NOTIFICATION_ID = 1001
         
-        // Actions
         const val ACTION_PLAY = "com.epubreader.tts.PLAY"
         const val ACTION_PAUSE = "com.epubreader.tts.PAUSE"
         const val ACTION_STOP = "com.epubreader.tts.STOP"
@@ -40,7 +35,6 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         const val ACTION_PREVIOUS = "com.epubreader.tts.PREVIOUS"
         const val ACTION_TOGGLE = "com.epubreader.tts.TOGGLE"
         
-        // Extras
         const val EXTRA_TEXT = "tts_text"
         const val EXTRA_CHAPTER_INDEX = "tts_chapter_index"
         const val EXTRA_CHAPTER_TITLE = "tts_chapter_title"
@@ -51,7 +45,6 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         const val EXTRA_VOICE_NAME = "tts_voice_name"
         const val EXTRA_PLAYBACK_SPEED = "tts_playback_speed"
         
-        // Preferences
         const val PREFS_NAME = "tts_prefs"
         const val PREF_SPEECH_RATE = "speech_rate"
         const val PREF_PITCH = "pitch"
@@ -61,7 +54,6 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         const val PREF_CURRENT_CHAPTER = "current_chapter"
         const val PREF_CURRENT_POSITION = "current_position"
         
-        // Defaults - Chinese Mandarin as default
         const val DEFAULT_SPEECH_RATE = 1.0f
         const val DEFAULT_PITCH = 1.0f
         const val DEFAULT_LANGUAGE = "zh-CN"
@@ -93,7 +85,9 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     private val callbacks = ConcurrentHashMap<Int, TtsCallback>()
     private var callbackIdCounter = 0
     
-    private val binder = LocalBinder()
+    inner class LocalBinder : Binder() {
+        fun getService(): TtsService = this@TtsService
+    }
 
     interface TtsCallback {
         fun onInit(success: Boolean)
@@ -103,10 +97,6 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         fun onProgress(utteranceId: String, start: Int, end: Int, percent: Int)
         fun onChapterChanged(chapterIndex: Int, chapterTitle: String)
         fun onStateChanged(isSpeaking: Boolean, isPaused: Boolean)
-    }
-
-    inner class LocalBinder : Binder() {
-        fun getService(): TtsService = this@TtsService
     }
 
     override fun onCreate() {
@@ -174,7 +164,6 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 callbacks.values.forEach { it.onDoneSpeaking(utteranceId) }
                 callbacks.values.forEach { it.onStateChanged(false, false) }
                 
-                // Auto-play next chapter
                 if (currentChapterIndex < chapters.size - 1) {
                     playNextChapter()
                 } else {
@@ -222,7 +211,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         super.onDestroy()
     }
 
-    override fun onBind(intent: Intent?): IBinder = binder
+    override fun onBind(intent: Intent?): IBinder = LocalBinder()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let { handleIntent(it) }
@@ -253,7 +242,6 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             applyTtsSettings()
             callbacks.values.forEach { it.onInit(true) }
             
-            // Resume if we had text queued
             if (currentText.isNotEmpty() && !isSpeaking) {
                 speakCurrentChapter()
             }
@@ -270,11 +258,10 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             val langResult = it.setLanguage(locale)
             
             if (langResult == TextToSpeech.LANG_MISSING_DATA || langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
-                // Try to find a suitable voice for Chinese/English
                 val voices = it.voices
-                val matchingVoice = voices.firstOrNull { voice ->
-                    voice.locale.language == locale.language ||
-                    voice.locale.toLanguageTag().startsWith(language.substringBefore('-'))
+                val matchingVoice = voices.firstOrNull { 
+                    it.locale.language == locale.language || 
+                    it.locale.toLanguageTag().startsWith(language.substringBefore('-'))
                 }
                 matchingVoice?.let { it.setVoice(it) }
             }
@@ -304,7 +291,6 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         chapterList: List<EpubChapter> = emptyList()
     ) {
         if (!isInitialized) {
-            // Queue for when TTS initializes
             currentText = text
             currentChapterIndex = chapterIndex
             currentChapterTitle = chapterTitle
@@ -443,7 +429,6 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         callbacks.remove(id)
     }
 
-    // State getters
     fun isTtsInitialized(): Boolean = isInitialized
     fun isCurrentlySpeaking(): Boolean = isSpeaking
     fun isCurrentlyPaused(): Boolean = isPaused
@@ -501,7 +486,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val progress = if (currentText.isNotEmpty()) 50 else 0 // Placeholder
+        val progress = if (currentText.isNotEmpty()) 50 else 0
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_media_play)

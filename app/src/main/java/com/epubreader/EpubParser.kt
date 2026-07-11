@@ -17,11 +17,6 @@ import javax.xml.parsers.DocumentBuilderFactory
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList
 
-/**
- * EPUB Parser using Android built-in XML and ZIP parsing
- * Supports both EPUB 2 (NCX) and EPUB 3 (NAV) formats
- * Handles Chinese (Traditional/Simplified) and English content
- */
 class EpubParser(private val context: Context) {
 
     companion object {
@@ -33,50 +28,42 @@ class EpubParser(private val context: Context) {
         private const val HTML_MIME = "text/html"
     }
 
-    /**
-     * Parse EPUB from URI (content:// or file://)
-     */
     @Throws(Exception::class)
     fun parseFromUri(uri: Uri): EpubBook {
         val inputStream = context.contentResolver.openInputStream(uri)
             ?: throw Exception("Cannot open URI: $uri")
-        
+
         val tempFile = File(context.cacheDir, "temp_${System.currentTimeMillis()}.epub")
         tempFile.deleteOnExit()
-        
+
         FileOutputStream(tempFile).use { output ->
             inputStream.copyTo(output)
         }
-        
+
         return parseFromFile(tempFile)
     }
 
-    /**
-     * Parse EPUB from File
-     */
     @Throws(Exception::class)
     fun parseFromFile(file: File): EpubBook {
         Log.d(TAG, "Parsing EPUB: ${file.absolutePath}")
-        
+
         val zipFile = ZipFile(file)
         try {
-            // Find container.xml to locate OPF file
             val containerEntry = zipFile.getEntry("META-INF/container.xml")
                 ?: throw Exception("No container.xml found in EPUB")
-            
+
             val containerXml = zipFile.getInputStream(containerEntry).readBytes().decodeToString()
             val containerDoc = Jsoup.parse(containerXml, "", org.jsoup.parser.Parser.xmlParser())
             val rootfile = containerDoc.select("rootfile").first()
                 ?: throw Exception("No rootfile in container.xml")
-            
+
             val opfPath = rootfile.attr("full-path")
             val opfEntry = zipFile.getEntry(opfPath)
                 ?: throw Exception("OPF file not found: $opfPath")
-            
+
             val opfContent = zipFile.getInputStream(opfEntry).readBytes().decodeToString()
             val opfDoc = Jsoup.parse(opfContent, "", org.jsoup.parser.Parser.xmlParser())
-            
-            // Parse metadata
+
             val metadata = opfDoc.select("metadata").first()
             val title = metadata?.select("dc\\:title, title").first()?.text() ?: file.nameWithoutExtension
             val author = metadata?.select("dc\\:creator, creator").first()?.text() ?: "Unknown Author"
@@ -84,8 +71,7 @@ class EpubParser(private val context: Context) {
             val identifier = metadata?.select("dc\\:identifier, identifier").first()?.text() ?: file.name
             val publisher = metadata?.select("dc\\:publisher, publisher").first()?.text() ?: ""
             val description = metadata?.select("dc\\:description, description").first()?.text() ?: ""
-            
-            // Parse manifest
+
             val manifestItems = mutableMapOf<String, ManifestItem>()
             opfDoc.select("manifest item").forEach { item ->
                 val id = item.attr("id")
@@ -94,24 +80,20 @@ class EpubParser(private val context: Context) {
                 val properties = item.attr("properties")
                 manifestItems[id] = ManifestItem(id, href, mediaType, properties)
             }
-            
-            // Parse spine
+
             val spineItems = mutableListOf<String>()
             opfDoc.select("spine itemref").forEach { itemref ->
                 val idref = itemref.attr("idref")
                 spineItems.add(idref)
             }
-            
-            // Parse cover
+
             val coverImagePath = parseCoverImage(opfDoc, manifestItems, zipFile, opfPath)
-            
-            // Parse NCX or NAV for TOC
+
             val toc = parseToc(opfDoc, manifestItems, zipFile, opfPath)
-            
-            // Parse chapters from spine
+
             val basePath = opfPath.substringBeforeLast('/') + "/"
             val chapters = parseChapters(spineItems, manifestItems, zipFile, basePath, toc)
-            
+
             return EpubBook(
                 id = identifier,
                 title = title,
@@ -137,26 +119,23 @@ class EpubParser(private val context: Context) {
         zipFile: ZipFile,
         opfPath: String
     ): String? {
-        // Check meta for cover
         val coverMeta = opfDoc.select("meta[name=cover]").firstOrNull()
         val coverId = coverMeta?.attr("content")
-        
+
         if (coverId != null && coverId.isNotEmpty()) {
             manifestItems[coverId]?.let { item ->
                 return extractFile(zipFile, opfPath, item.href)
             }
         }
-        
-        // Check manifest item with properties="cover-image"
+
         manifestItems.values.firstOrNull { it.properties.contains("cover-image") }?.let { item ->
             return extractFile(zipFile, opfPath, item.href)
         }
-        
-        // Try first image
+
         manifestItems.values.firstOrNull { it.mediaType.startsWith("image/") }?.let { item ->
             return extractFile(zipFile, opfPath, item.href)
         }
-        
+
         return null
     }
 
@@ -179,10 +158,9 @@ class EpubParser(private val context: Context) {
         zipFile: ZipFile,
         opfPath: String
     ): List<TocItem> {
-        // Try NAV (EPUB3) first
         val navItem = manifestItems.values.firstOrNull { it.properties.contains("nav") }
             ?: manifestItems.values.firstOrNull { it.mediaType == NAV_MIME }
-        
+
         if (navItem != null) {
             val navPath = opfPath.substringBeforeLast('/') + "/" + navItem.href
             val navEntry = zipFile.getEntry(navPath)
@@ -191,8 +169,7 @@ class EpubParser(private val context: Context) {
                 return parseNavToc(navContent, opfPath.substringBeforeLast('/') + "/")
             }
         }
-        
-        // Fallback to NCX (EPUB2)
+
         val ncxItem = manifestItems.values.firstOrNull { it.mediaType == NCX_MIME }
         if (ncxItem != null) {
             val ncxPath = opfPath.substringBeforeLast('/') + "/" + ncxItem.href
@@ -202,7 +179,7 @@ class EpubParser(private val context: Context) {
                 return parseNcxToc(ncxContent)
             }
         }
-        
+
         return emptyList()
     }
 
@@ -210,7 +187,7 @@ class EpubParser(private val context: Context) {
         val doc = Jsoup.parse(navContent, "", org.jsoup.parser.Parser.xmlParser())
         val nav = doc.select("nav[epub\\:type=toc], nav[typeof=toc]").first()
             ?: doc.select("nav").first()
-        
+
         return if (nav != null) {
             parseNavList(nav.select("ol > li"), basePath, 0)
         } else emptyList()
@@ -226,7 +203,7 @@ class EpubParser(private val context: Context) {
             val childItems = if (children.isNotEmpty()) {
                 parseNavList(children, basePath, level + 1)
             } else emptyList()
-            
+
             TocItem(title, fullHref, childItems, level)
         }
     }
@@ -248,7 +225,7 @@ class EpubParser(private val context: Context) {
             val childItems = if (children.isNotEmpty()) {
                 parseNcxNavPoints(children, level + 1)
             } else emptyList()
-            
+
             TocItem(label, href, childItems, level)
         }
     }
@@ -262,8 +239,7 @@ class EpubParser(private val context: Context) {
     ): List<EpubChapter> {
         val chapters = mutableListOf<EpubChapter>()
         var order = 0
-        
-        // Build a map of href -> TOC chapter for title lookup
+
         val tocMap = mutableMapOf<String, TocItem>()
         fun flattenToc(items: List<TocItem>) {
             items.forEach { item ->
@@ -272,7 +248,7 @@ class EpubParser(private val context: Context) {
             }
         }
         flattenToc(toc)
-        
+
         spineItems.forEach { idref ->
             manifestItems[idref]?.let { item ->
                 if (item.mediaType == XHTML_MIME || item.mediaType == HTML_MIME) {
@@ -294,7 +270,7 @@ class EpubParser(private val context: Context) {
                 }
             }
         }
-        
+
         return chapters
     }
 
@@ -304,27 +280,20 @@ class EpubParser(private val context: Context) {
             ?: doc.select("h1, h2, h3").first()?.text()
     }
 
-    /**
-     * Clean HTML content for display in WebView
-     * Handles Chinese text properly (both Simplified and Traditional)
-     */
     private fun cleanHtmlContent(html: String): String {
         if (html.isBlank()) return ""
-        
+
         val doc = Jsoup.parse(html, "", org.jsoup.parser.Parser.xmlParser())
-        
-        // Remove unwanted elements
+
         doc.select("script, style, link[rel=stylesheet], meta, noselect").remove()
-        
-        // Fix image paths to use content:// or file://
+
         doc.select("img").forEach { img ->
             val src = img.attr("src")
             if (src.isNotEmpty() && !src.startsWith("data:") && !src.startsWith("http")) {
                 img.attr("data-original-src", src)
             }
         }
-        
-        // Add viewport and responsive styles
+
         val head = doc.head()
         if (head.isNotEmpty()) {
             head.append("""
@@ -372,8 +341,8 @@ class EpubParser(private val context: Context) {
                     code { background: #f5f5f5; padding: 0.2em 0.4em; border-radius: 3px; }
                     blockquote { border-left: 4px solid #ccc; margin: 1em 0; padding-left: 1em; color: #666; }
                     hr { border: none; border-top: 1px solid #eee; margin: 2em 0; }
-                    
-                    /* Dark theme support */
+                    a { color: #0066cc; text-decoration: none; }
+                    a:hover { text-decoration: underline; }
                     @media (prefers-color-scheme: dark) {
                         body { color: #e0e0e0; background: #121212; }
                         h1, h2, h3, h4, h5, h6 { color: #fff; }
@@ -382,8 +351,6 @@ class EpubParser(private val context: Context) {
                         blockquote { border-left-color: #555; color: #aaa; }
                         hr { border-top-color: #333; }
                     }
-                    
-                    /* Sepia theme */
                     body.sepia { 
                         background: #f4e4bc; 
                         color: #5d4e37; 
@@ -394,15 +361,11 @@ class EpubParser(private val context: Context) {
                     body.sepia pre { background: #e8d8a8; }
                     body.sepia blockquote { border-left-color: #c4b596; color: #8a7a5a; }
                     body.sepia hr { border-top-color: #d4c4a4; }
-                    
-                    /* Chinese text optimization */
                     :lang(zh), :lang(zh-CN), :lang(zh-TW), :lang(zh-Hans), :lang(zh-Hant) {
                         font-family: 'Noto Sans SC', 'Noto Sans TC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
                         line-height: 1.8;
                     }
                     :lang(zh) p { text-align: justify; text-justify: inter-ideograph; }
-                    
-                    /* Vertical text support for traditional Chinese */
                     .vertical-text {
                         writing-mode: vertical-rl;
                         text-orientation: mixed;
@@ -412,13 +375,10 @@ class EpubParser(private val context: Context) {
                 </style>
             """.trimIndent())
         }
-        
+
         return doc.html()
     }
 
-    /**
-     * Extract images from EPUB for WebView loading
-     */
     fun extractImages(zipFile: ZipFile, basePath: String, manifestItems: Map<String, ManifestItem>, baseDir: File): Map<String, File> {
         val images = mutableMapOf<String, File>()
         manifestItems.values.filter { it.mediaType.startsWith("image/") }.forEach { resource ->

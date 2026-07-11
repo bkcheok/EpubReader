@@ -3,7 +3,6 @@ package com.epubreader.db
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
-import com.epubreader.EpubBook
 import com.epubreader.EpubChapter
 import com.epubreader.EpubSettings
 import com.epubreader.ReadingTheme
@@ -72,19 +71,19 @@ class Converters {
 
     @TypeConverter
     fun chaptersToJson(chapters: List<EpubChapter>): String = json.encodeToString(chapters)
-    
+
     @TypeConverter
     fun jsonToChapters(json: String): List<EpubChapter> = json.decodeFromString()
 
     @TypeConverter
     fun spineToJson(spine: List<String>): String = json.encodeToString(spine)
-    
+
     @TypeConverter
     fun jsonToSpine(json: String): List<String> = json.decodeFromString()
 
     @TypeConverter
     fun metadataToJson(metadata: Map<String, String>): String = json.encodeToString(metadata)
-    
+
     @TypeConverter
     fun jsonToMetadata(json: String): Map<String, String> = json.decodeFromString()
 }
