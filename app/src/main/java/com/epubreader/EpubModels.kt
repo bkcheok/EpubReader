@@ -21,7 +21,7 @@ data class EpubChapter(
         content = parcel.readString() ?: "",
         order = parcel.readInt(),
         level = parcel.readInt(),
-        children = parcel.createTypedArrayList(EpubChapter.CREATOR)
+        children = parcel.createTypedArrayList(EpubChapter.CREATOR) ?: emptyList()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -82,9 +82,9 @@ data class EpubBook(
         description = parcel.readString() ?: "",
         coverHref = parcel.readString() ?: "",
         coverImage = parcel.createByteArray(),
-        chapters = parcel.createTypedArrayList(EpubChapter.CREATOR),
-        spine = parcel.createStringArrayList(),
-        metadata = parcel.readHashMap(String::class.java, String::class.java),
+        chapters = parcel.createTypedArrayList(EpubChapter.CREATOR) ?: emptyList(),
+        spine = parcel.createStringArrayList() ?: emptyList(),
+        metadata = parcel.readHashMap(String::class.java, String::class.java) ?: emptyMap(),
         filePath = parcel.readString() ?: ""
     )
 
@@ -111,9 +111,6 @@ data class EpubBook(
         override fun newArray(size: Int): Array<EpubBook?> = arrayOfNulls(size)
     }
 
-    /**
-     * Get all chapters in reading order (flattened)
-     */
     val flattenedChapters: List<EpubChapter>
         get() = flattenChapters(chapters)
 
@@ -128,16 +125,10 @@ data class EpubBook(
         return result
     }
 
-    /**
-     * Get chapter by index in reading order
-     */
     fun getChapterAt(index: Int): EpubChapter? {
         return flattenedChapters.getOrNull(index)
     }
 
-    /**
-     * Get total chapter count
-     */
     val chapterCount: Int
         get() = flattenedChapters.size
 }

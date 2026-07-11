@@ -71,19 +71,19 @@ class Converters {
 
     @TypeConverter
     fun chaptersToJson(chapters: List<EpubChapter>): String = json.encodeToString(chapters)
-
+    
     @TypeConverter
-    fun jsonToChapters(json: String): List<EpubChapter> = json.decodeFromString()
+    fun jsonToChapters(json: String): List<EpubChapter> = json.decodeFromString<List<EpubChapter>>()
 
     @TypeConverter
     fun spineToJson(spine: List<String>): String = json.encodeToString(spine)
-
+    
     @TypeConverter
-    fun jsonToSpine(json: String): List<String> = json.decodeFromString()
+    fun jsonToSpine(json: String): List<String> = json.decodeFromString<List<String>>()
 
     @TypeConverter
     fun metadataToJson(metadata: Map<String, String>): String = json.encodeToString(metadata)
-
+    
     @TypeConverter
     fun jsonToMetadata(json: String): Map<String, String> = json.decodeFromString()
 }
