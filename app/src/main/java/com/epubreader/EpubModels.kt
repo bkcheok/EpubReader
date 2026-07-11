@@ -42,20 +42,6 @@ data class EpubChapter(
     }
 }
 
-data class TocItem(
-    val title: String,
-    val href: String,
-    val children: List<TocItem> = emptyList(),
-    val level: Int = 0
-)
-
-data class ManifestItem(
-    val id: String,
-    val href: String,
-    val mediaType: String,
-    val properties: String = ""
-)
-
 @Serializable
 data class EpubBook(
     val id: String = "",

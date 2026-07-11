@@ -121,21 +121,21 @@ class EpubParser(private val context: Context) {
     ): String? {
         val coverMeta = opfDoc.select("meta[name=cover]").firstOrNull()
         val coverId = coverMeta?.attr("content")
-
+        
         if (coverId != null && coverId.isNotEmpty()) {
             manifestItems[coverId]?.let { item ->
                 return extractFile(zipFile, opfPath, item.href)
             }
         }
-
+        
         manifestItems.values.firstOrNull { it.properties.contains("cover-image") }?.let { item ->
             return extractFile(zipFile, opfPath, item.href)
         }
-
+        
         manifestItems.values.firstOrNull { it.mediaType.startsWith("image/") }?.let { item ->
             return extractFile(zipFile, opfPath, item.href)
         }
-
+        
         return null
     }
 
