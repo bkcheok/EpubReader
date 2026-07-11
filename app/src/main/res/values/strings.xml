@@ -66,8 +66,6 @@
     <string name="next_chapter">Next Chapter</string>
     <string name="play_pause">Play/Pause</string>
     <string name="search">Search</string>
-    <string name="tts_ready">Ready to play</string>
-    <string name="tts_settings">TTS Settings</string>
     <string name="tts_language">Language</string>
     <string name="tts_voice">Voice</string>
     <string name="tts_speech_rate">Speech Rate</string>
