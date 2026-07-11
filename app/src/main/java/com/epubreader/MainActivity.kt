@@ -49,7 +49,6 @@ import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
 
@@ -84,8 +83,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_main)
 
         setupToolbar()
         setupDrawer()
@@ -102,14 +100,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupToolbar() {
-        setSupportActionBar(binding.toolbar)
+        setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
     }
 
     private fun setupDrawer() {
-        val drawerLayout: DrawerLayout = binding.drawerLayout
-        val navView: NavigationView = binding.navView
+        val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
+        val navView: NavigationView = findViewById(R.id.nav_view)
 
         appBarConfiguration = AppBarConfiguration(
             setOf(R.id.nav_library, R.id.nav_recent, R.id.nav_tts, R.id.nav_settings),
@@ -117,7 +115,7 @@ class MainActivity : AppCompatActivity() {
         )
 
         val toggle = androidx.appcompat.app.ActionBarDrawerToggle(
-            this, drawerLayout, binding.toolbar,
+            this, drawerLayout, findViewById(R.id.toolbar),
             R.string.navigation_drawer_open, R.string.navigation_drawer_close
         )
         drawerLayout.addDrawerListener(toggle)
@@ -144,8 +142,8 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView() {
-        webView = binding.webView
-        webProgressBar = binding.webProgressBar
+        webView = findViewById(R.id.web_view)
+        webProgressBar = findViewById(R.id.web_progress_bar)
 
         val settings = webView.settings
         settings.javaScriptEnabled = true
@@ -208,19 +206,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupTtsBottomSheet() {
-        ttsBottomSheet = binding.ttsBottomSheet
+        ttsBottomSheet = findViewById(R.id.tts_bottom_sheet)
         bottomSheetBehavior = BottomSheetBehavior.from(ttsBottomSheet)
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
 
-        binding.btnTtsPlayPause.setOnClickListener { toggleTts() }
-        binding.btnTtsStop.setOnClickListener { stopTts() }
-        binding.btnTtsPrevious.setOnClickListener { previousChapter() }
-        binding.btnTtsNext.setOnClickListener { nextChapter() }
-        binding.btnTtsSettings.setOnClickListener { openTtsSettings() }
+        findViewById<ImageButton>(R.id.btn_tts_play_pause).setOnClickListener { toggleTts() }
+        findViewById<ImageButton>(R.id.btn_tts_stop).setOnClickListener { stopTts() }
+        findViewById<ImageButton>(R.id.btn_tts_previous).setOnClickListener { previousChapter() }
+        findViewById<ImageButton>(R.id.btn_tts_next).setOnClickListener { nextChapter() }
+        findViewById<ImageButton>(R.id.btn_tts_settings).setOnClickListener { openTtsSettings() }
     }
 
     private fun setupFab() {
-        binding.fabTts.setOnClickListener { toggleTtsBottomSheet() }
+        findViewById<FloatingActionButton>(R.id.fab_tts).setOnClickListener { toggleTtsBottomSheet() }
     }
 
     private fun toggleTtsBottomSheet() {
@@ -249,264 +247,102 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadEpub(uri: Uri) {
         webProgressBar.visibility = View.VISIBLE
-        lifecycleScope.launch {
-            try {
-                val parser = EpubParser(this@MainActivity)
-                val book = parser.parseFromUri(uri)
-                currentBook = book
-                currentChapterIndex = 0
-
-                runOnUiThread {
-                    displayChapter(0)
-                    updateNavHeader()
-                    Toast.makeText(this@MainActivity, "Loaded: ${book.title}", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Log.e("MainActivity", "Failed to load EPUB", e)
-                runOnUiThread {
-                    webProgressBar.visibility = View.GONE
-                    Toast.makeText(this@MainActivity, "Failed to load EPUB: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-            }
+        
+        val parser = EpubParser(this)
+        try {
+            val book = parser.parseFromUri(uri)
+            currentBook = book
+            currentChapterIndex = 0
+            displayChapter(0)
+            updateTtsService()
+            addToLibrary(book)
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Failed to load EPUB", e)
+            Toast.makeText(this, "Failed to load EPUB: ${e.message}", Toast.LENGTH_LONG).show()
+        } finally {
+            webProgressBar.visibility = View.GONE
         }
     }
 
     private fun displayChapter(index: Int) {
         currentBook?.getChapterAt(index)?.let { chapter ->
             currentChapterIndex = index
-            val html = buildChapterHtml(chapter)
-            webView.loadDataWithBaseURL(
-                "file:///android_asset/",
-                html,
-                "text/html",
-                "UTF-8",
-                null
-            )
-            updateTtsInfo()
+            val htmlContent = chapter.content
+            webView.loadDataWithBaseURL(null, htmlContent, "text/html", "UTF-8", null)
+            supportActionBar?.title = chapter.title
         }
-    }
-
-    private fun buildChapterHtml(chapter: EpubChapter): String {
-        val settings = epubSettings
-        val theme = when (settings.theme) {
-            ReadingTheme.DARK -> "dark"
-            ReadingTheme.SEPIA -> "sepia"
-            else -> "light"
-        }
-
-        return """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>${chapter.title}</title>
-                <style>
-                    :root {
-                        --bg-color: ${getBgColor(theme)};
-                        --text-color: ${getTextColor(theme)};
-                        --heading-color: ${getHeadingColor(theme)};
-                        --link-color: ${getLinkColor(theme)};
-                    }
-                    body {
-                        font-family: '${settings.fontFamily}', sans-serif;
-                        font-size: ${settings.fontSize}px;
-                        line-height: ${settings.lineHeight};
-                        margin: ${settings.margin}px;
-                        color: var(--text-color);
-                        background-color: var(--bg-color);
-                        text-align: ${settings.textAlign.name.toLowerCase()};
-                        transition: background-color 0.3s, color 0.3s;
-                    }
-                    h1, h2, h3, h4, h5, h6 {
-                        color: var(--heading-color);
-                        margin-top: 1.5em;
-                        margin-bottom: 0.5em;
-                        line-height: 1.3;
-                    }
-                    p { margin: 0.8em 0; }
-                    img { max-width: 100%; height: auto; display: block; margin: 1em auto; }
-                    a { color: var(--link-color); text-decoration: none; }
-                    a:hover { text-decoration: underline; }
-                    .chapter-title { font-size: 1.5em; font-weight: bold; margin-bottom: 1em; text-align: center; }
-                    .tts-highlight { background-color: #fff3cd; border-radius: 2px; }
-                    @media (prefers-color-scheme: dark) {
-                        body:not(.sepia):not(.dark) { background: #121212; color: #e0e0e0; }
-                    }
-                </style>
-            </head>
-            <body class="$theme">
-                <div class="chapter-title">${chapter.title}</div>
-                ${chapter.content}
-            </body>
-            </html>
-        """.trimIndent()
-    }
-
-    private fun getBgColor(theme: String): String = when (theme) {
-        "dark" -> "#121212"
-        "sepia" -> "#fdf6e3"
-        else -> "#ffffff"
-    }
-
-    private fun getTextColor(theme: String): String = when (theme) {
-        "dark" -> "#e0e0e0"
-        "sepia" -> "#3c2e1e"
-        else -> "#1a1a1a"
-    }
-
-    private fun getHeadingColor(theme: String): String = when (theme) {
-        "dark" -> "#ffffff"
-        "sepia" -> "#1a1a1a"
-        else -> "#1a1a1a"
-    }
-
-    private fun getLinkColor(theme: String): String = when (theme) {
-        "dark" -> "#64b5f6"
-        "sepia" -> "#8b4513"
-        else -> "#0066cc"
     }
 
     private fun applyReadingSettings() {
-        val settings = epubSettings
         val js = """
             javascript:(function() {
-                document.body.style.fontSize = '${settings.fontSize}px';
-                document.body.style.lineHeight = '${settings.lineHeight}';
-                document.body.style.margin = '${settings.margin}px';
-                document.body.style.fontFamily = '${settings.fontFamily}';
-                document.body.style.textAlign = '${settings.textAlign.name.toLowerCase()}';
-                document.body.className = '${settings.theme.name.toLowerCase()}';
+                document.body.style.fontSize = '${epubSettings.fontSize}px';
+                document.body.style.lineHeight = '${epubSettings.lineHeight}';
+                document.body.style.margin = '${epubSettings.margin}px';
+                document.body.style.fontFamily = '${epubSettings.fontFamily}';
+                document.body.style.textAlign = '${epubSettings.textAlign.name.toLowerCase()}';
+                document.body.className = document.body.className.replace(/theme-\\w+/g, '');
+                document.body.classList.add('theme-${epubSettings.theme.name.toLowerCase()}');
             })()
         """
         webView.evaluateJavascript(js, null)
     }
 
     private fun updateChapterProgress() {
-        currentBook?.let { book ->
-            val progress = ((currentChapterIndex + 1) * 100 / book.chapterCount)
-        }
+        // Update reading progress in database
     }
 
-    private fun updateNavHeader() {
-        currentBook?.let { book ->
-            binding.navView.getHeaderView(0).findViewById<TextView>(R.id.tv_current_book).text = book.title
-        }
-    }
-
-    private fun updateTtsInfo() {
-        currentBook?.let { book ->
-            if (currentChapterIndex < book.flattenedChapters.size) {
-                val chapter = book.flattenedChapters[currentChapterIndex]
-                binding.tvTtsInfo.text = "${chapter.title} (${currentChapterIndex + 1}/${book.chapterCount})"
+    private fun updateTtsService() {
+        ttsService?.let { service ->
+            currentBook?.let { book ->
+                service.setChapters(listOf(book))
+                service.setCurrentChapter(currentChapterIndex)
             }
         }
     }
 
-    private fun startTts() {
-        currentBook?.let { book ->
-            val chapter = book.getChapterAt(currentChapterIndex)
-            chapter?.let {
-                val chapters = book.flattenedChapters.map { ParcelableEpubChapter(it) }
-                val intent = Intent(this, TtsService::class.java).apply {
-                    action = TtsService.ACTION_PLAY
-                    putExtra(TtsService.EXTRA_TEXT, stripHtml(it.content))
-                    putExtra(TtsService.EXTRA_CHAPTER_INDEX, currentChapterIndex)
-                    putExtra(TtsService.EXTRA_CHAPTER_TITLE, it.title)
-                    putParcelableArrayListExtra(TtsService.EXTRA_CHAPTERS, java.util.ArrayList(chapters))
-                }
-                startService(intent)
-                bindTtsService()
-            }
-        }
-    }
-
-    private fun stripHtml(html: String): String {
-        return android.text.Html.fromHtml(html, android.text.Html.FROM_HTML_MODE_COMPACT).toString()
+    private fun addToLibrary(book: EpubBook) {
+        // Add to Room database
     }
 
     private fun toggleTts() {
-        ttsService?.let {
-            if (it.isCurrentlySpeaking() && !it.isCurrentlyPaused()) {
-                it.pauseSpeaking()
-            } else {
-                it.resumeSpeaking()
-            }
-            updateTtsButtons()
-        }
+        ttsService?.togglePlayPause()
     }
 
     private fun stopTts() {
         ttsService?.stopSpeaking()
-        updateTtsButtons()
-    }
-
-    private fun nextChapter() {
-        ttsService?.playNextChapter()
     }
 
     private fun previousChapter() {
         ttsService?.playPreviousChapter()
     }
 
+    private fun nextChapter() {
+        ttsService?.playNextChapter()
+    }
+
     private fun openTtsSettings() {
-        val intent = Intent(this, TtsSettingsActivity::class.java)
-        startActivity(intent)
+        startActivity(Intent(this, TtsSettingsActivity::class.java))
     }
 
-    private fun updateTtsButtons() {
-        ttsService?.let { service ->
-            val isPlaying = service.isCurrentlySpeaking() && !service.isCurrentlyPaused()
-            binding.btnTtsPlayPause.setImageResource(
-                if (isPlaying) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play
-            )
-            binding.tvTtsStatus.text = if (isPlaying) "Playing" else if (service.isCurrentlyPaused()) "Paused" else "Stopped"
+    override fun onSupportNavigateUp(): Boolean {
+        return NavigationUI.navigateUp(navController, appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    override fun onDestroy() {
+        if (isBound) {
+            unbindService(serviceConnection)
+            isBound = false
         }
+        super.onDestroy()
     }
 
-    private fun bindTtsService() {
-        val intent = Intent(this, TtsService::class.java)
-        bindService(intent, ttsConnection, Context.BIND_AUTO_CREATE)
-    }
-
-    private val ttsConnection = object : ServiceConnection {
+    private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
             val binder = service as TtsService.LocalBinder
             ttsService = binder.getService()
             isBound = true
-
-            ttsCallbackId = ttsService?.registerCallback(object : TtsService.TtsCallback {
-                override fun onInit(success: Boolean) {
-                    runOnUiThread { updateTtsButtons() }
-                }
-                override fun onStartSpeaking(utteranceId: String) {
-                    runOnUiThread { updateTtsButtons() }
-                }
-                override fun onDoneSpeaking(utteranceId: String) {
-                    runOnUiThread {
-                        updateTtsButtons()
-                        if (currentBook != null && currentChapterIndex < currentBook!!.chapterCount - 1) {
-                            currentChapterIndex++
-                            displayChapter(currentChapterIndex)
-                        }
-                    }
-                }
-                override fun onError(utteranceId: String, errorCode: Int) {
-                    runOnUiThread { updateTtsButtons() }
-                }
-                override fun onProgress(utteranceId: String, start: Int, end: Int, percent: Int) {
-                    runOnUiThread { binding.ttsProgressBar.progress = percent }
-                }
-                override fun onChapterChanged(chapterIndex: Int, chapterTitle: String) {
-                    runOnUiThread {
-                        currentChapterIndex = chapterIndex
-                        displayChapter(chapterIndex)
-                    }
-                }
-                override fun onStateChanged(isSpeaking: Boolean, isPaused: Boolean) {
-                    runOnUiThread { updateTtsButtons() }
-                }
-            }) ?: -1
+            updateTtsService()
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
@@ -515,141 +351,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        if (ttsService != null && !isBound) {
-            bindTtsService()
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        if (isBound) {
-            ttsService?.unregisterCallback(ttsCallbackId)
-            unbindService(ttsConnection)
-            isBound = false
-        }
-    }
-
-    override fun onDestroy() {
-        if (isBound) {
-            ttsService?.unregisterCallback(ttsCallbackId)
-            unbindService(ttsConnection)
-        }
-        webView.destroy()
-        super.onDestroy()
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_OPEN_EPUB && resultCode == Activity.RESULT_OK) {
-            data?.data?.let { uri ->
-                takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                loadEpub(uri)
-            }
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PERMISSION_REQUEST_STORAGE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openFilePicker()
-            }
-        }
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        intent.data?.let { loadEpub(it) }
-    }
-
-    override fun onBackPressed() {
-        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
-        } else if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-        } else if (webView.canGoBack()) {
-            webView.goBack()
-        } else {
-            super.onBackPressed()
-        }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_open -> { openFilePicker(); true }
-            R.id.action_toc -> { showTocDialog(); true }
-            R.id.action_search -> { showSearchDialog(); true }
-            R.id.action_tts -> { toggleTtsBottomSheet(); true }
-            R.id.action_settings -> { navController.navigate(R.id.nav_settings); true }
-            R.id.action_tts_settings -> { openTtsSettings(); true }
-            R.id.action_about -> { showAboutDialog(); true }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-    }
-
-    private fun showTocDialog() {
-        currentBook?.let { book ->
-            val items = book.flattenedChapters.map { it.title }.toTypedArray()
-            AlertDialog.Builder(this)
-                .setTitle("Table of Contents")
-                .setSingleChoiceItems(items, currentChapterIndex) { _, which ->
-                    currentChapterIndex = which
-                    displayChapter(which)
-                    binding.drawerLayout.closeDrawers()
-                }
-                .show()
-        }
-    }
-
-    private fun showSearchDialog() {
-        Toast.makeText(this, "Search coming soon", Toast.LENGTH_SHORT).show()
-    }
-
     private fun showAboutDialog() {
         AlertDialog.Builder(this)
             .setTitle("EPUB Reader")
-            .setMessage("Version 1.0\n\nEPUB 2/3 Reader with TTS support for Chinese and English")
+            .setMessage("Version 1.0\n\nA modern EPUB reader with TTS support for Chinese and English.")
             .setPositiveButton("OK", null)
             .show()
     }
 
-    private class WebAppInterface(private val activity: MainActivity) {
+    // JavaScript interface
+    inner class WebAppInterface(private val context: Context) {
         @android.webkit.JavascriptInterface
-        fun speakText(text: String) {
-            activity.runOnUiThread {
-                activity.startTtsFromText(text)
-            }
+        fun showToast(message: String) {
+            runOnUiThread { Toast.makeText(context, message, Toast.LENGTH_SHORT).show() }
         }
-    }
-
-    private fun startTtsFromText(text: String) {
-        currentBook?.let { book ->
-            val chapters = book.flattenedChapters.map { ParcelableEpubChapter(it) }
-            val intent = Intent(this, TtsService::class.java).apply {
-                action = TtsService.ACTION_PLAY
-                putExtra(TtsService.EXTRA_TEXT, text)
-                putExtra(TtsService.EXTRA_CHAPTER_INDEX, currentChapterIndex)
-                putExtra(TtsService.EXTRA_CHAPTER_TITLE, book.flattenedChapters[currentChapterIndex].title)
-                putParcelableArrayListExtra(TtsService.EXTRA_CHAPTERS, java.util.ArrayList(chapters))
-            }
-            startService(intent)
-            bindTtsService()
-        }
-    }
-
-    companion object {
-        const val REQUEST_OPEN_EPUB = 1001
-        const val PERMISSION_REQUEST_STORAGE = 1002
     }
 }

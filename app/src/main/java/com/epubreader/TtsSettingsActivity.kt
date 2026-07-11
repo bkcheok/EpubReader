@@ -171,10 +171,6 @@ class TtsSettingsActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadAvailableVoices() {
-        populateVoices()
-    }
-
     private fun populateVoices() {
         ttsService?.let { service ->
             availableVoices = service.getAvailableVoices()
@@ -201,6 +197,10 @@ class TtsSettingsActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun loadAvailableVoices() {
+        populateVoices()
     }
 
     override fun onDestroy() {

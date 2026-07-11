@@ -16,6 +16,7 @@ import android.os.IBinder
 import android.os.PowerManager
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.speech.tts.Voice
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.media.app.NotificationCompat as MediaNotificationCompat
@@ -389,7 +390,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         savePreferences()
     }
 
-    fun getAvailableVoices(): List<TextToSpeech.Voice> {
+    fun getAvailableVoices(): List<Voice> {
         return tts?.voices?.toList() ?: emptyList()
     }
 
