@@ -2,7 +2,7 @@ package com.epubreader.db
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverters
+import androidx.room.TypeConverter
 import com.epubreader.EpubBook
 import com.epubreader.EpubChapter
 import com.epubreader.EpubSettings
@@ -70,21 +70,21 @@ data class EpubSettingsEntity(
 class Converters {
     private val json = Json { ignoreUnknownKeys = true }
 
-    @TypeConverters
+    @TypeConverter
     fun chaptersToJson(chapters: List<EpubChapter>): String = json.encodeToString(chapters)
     
-    @TypeConverters
+    @TypeConverter
     fun jsonToChapters(json: String): List<EpubChapter> = json.decodeFromString()
 
-    @TypeConverters
+    @TypeConverter
     fun spineToJson(spine: List<String>): String = json.encodeToString(spine)
     
-    @TypeConverters
+    @TypeConverter
     fun jsonToSpine(json: String): List<String> = json.decodeFromString()
 
-    @TypeConverters
+    @TypeConverter
     fun metadataToJson(metadata: Map<String, String>): String = json.encodeToString(metadata)
     
-    @TypeConverters
+    @TypeConverter
     fun jsonToMetadata(json: String): Map<String, String> = json.decodeFromString()
 }
