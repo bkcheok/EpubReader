@@ -18,8 +18,7 @@
             android:summary="%d px"
             android:defaultValue="16"
             android:min="12"
-            android:max="36"
-            app:showSeekBarValue="true" />
+            android:max="36" />
 
         <SeekBarPreference
             android:key="line_height"
@@ -27,8 +26,7 @@
             android:summary="%.1f"
             android:defaultValue="150"
             android:min="100"
-            android:max="250"
-            app:showSeekBarValue="true" />
+            android:max="250" />
 
         <SeekBarPreference
             android:key="margin"
@@ -36,8 +34,7 @@
             android:summary="%d px"
             android:defaultValue="16"
             android:min="8"
-            android:max="48"
-            app:showSeekBarValue="true" />
+            android:max="48" />
 
         <ListPreference
             android:key="font_family"
@@ -101,8 +98,7 @@
             android:summary="%.1f"
             android:defaultValue="10"
             android:min="5"
-            android:max="30"
-            app:showSeekBarValue="true" />
+            android:max="30" />
 
         <SeekBarPreference
             android:key="tts_pitch"
@@ -110,8 +106,7 @@
             android:summary="%.1f"
             android:defaultValue="10"
             android:min="5"
-            android:max="20"
-            app:showSeekBarValue="true" />
+            android:max="20" />
 
         <SeekBarPreference
             android:key="tts_playback_speed"
@@ -119,8 +114,7 @@
             android:summary="%.1fx"
             android:defaultValue="10"
             android:min="5"
-            android:max="30"
-            app:showSeekBarValue="true" />
+            android:max="30" />
 
         <SwitchPreferenceCompat
             android:key="tts_highlight_text"
