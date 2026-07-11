@@ -4,150 +4,150 @@
 
     <PreferenceCategory app:title="@string/reading_settings">
         <ListPreference
-            app:key="theme"
-            app:title="@string/theme"
-            app:summary="%s"
-            app:entries="@array/reading_themes"
-            app:entryValues="@array/reading_theme_values"
-            app:defaultValue="system"
-            app:dialogTitle="@string/theme" />
+            android:key="theme"
+            android:title="@string/theme"
+            android:summary="%s"
+            android:entries="@array/reading_themes"
+            android:entryValues="@array/reading_theme_values"
+            android:defaultValue="system"
+            android:dialogTitle="@string/theme" />
 
         <SeekBarPreference
-            app:key="font_size"
-            app:title="@string/font_size"
-            app:summary="%d px"
-            app:defaultValue="16"
-            app:min="12"
-            app:max="36"
+            android:key="font_size"
+            android:title="@string/font_size"
+            android:summary="%d px"
+            android:defaultValue="16"
+            android:min="12"
+            android:max="36"
             app:showSeekBarValue="true" />
 
         <SeekBarPreference
-            app:key="line_height"
-            app:title="@string/line_height"
-            app:summary="%.1f"
-            app:defaultValue="150"
-            app:min="100"
-            app:max="250"
+            android:key="line_height"
+            android:title="@string/line_height"
+            android:summary="%.1f"
+            android:defaultValue="150"
+            android:min="100"
+            android:max="250"
             app:showSeekBarValue="true" />
 
         <SeekBarPreference
-            app:key="margin"
-            app:title="@string/margin"
-            app:summary="%d px"
-            app:defaultValue="16"
-            app:min="8"
-            app:max="48"
+            android:key="margin"
+            android:title="@string/margin"
+            android:summary="%d px"
+            android:defaultValue="16"
+            android:min="8"
+            android:max="48"
             app:showSeekBarValue="true" />
 
         <ListPreference
-            app:key="font_family"
-            app:title="@string/font_family"
-            app:summary="%s"
-            app:entries="@array/font_families"
-            app:entryValues="@array/font_family_values"
-            app:defaultValue="sans-serif"
-            app:dialogTitle="@string/font_family" />
+            android:key="font_family"
+            android:title="@string/font_family"
+            android:summary="%s"
+            android:entries="@array/font_families"
+            android:entryValues="@array/font_family_values"
+            android:defaultValue="sans-serif"
+            android:dialogTitle="@string/font_family" />
 
         <ListPreference
-            app:key="text_align"
-            app:title="@string/text_align"
-            app:summary="%s"
-            app:entries="@array/text_alignments"
-            app:entryValues="@array/text_align_values"
-            app:defaultValue="justify"
-            app:dialogTitle="@string/text_align" />
+            android:key="text_align"
+            android:title="@string/text_align"
+            android:summary="%s"
+            android:entries="@array/text_alignments"
+            android:entryValues="@array/text_align_values"
+            android:defaultValue="justify"
+            android:dialogTitle="@string/text_align" />
 
         <ListPreference
-            app:key="scroll_mode"
-            app:title="@string/scroll_mode"
-            app:summary="%s"
-            app:entries="@array/scroll_modes"
-            app:entryValues="@array/scroll_mode_values"
-            app:defaultValue="vertical"
-            app:dialogTitle="@string/scroll_mode" />
+            android:key="scroll_mode"
+            android:title="@string/scroll_mode"
+            android:summary="%s"
+            android:entries="@array/scroll_modes"
+            android:entryValues="@array/scroll_mode_values"
+            android:defaultValue="vertical"
+            android:dialogTitle="@string/scroll_mode" />
 
         <SwitchPreferenceCompat
-            app:key="keep_screen_on"
-            app:title="@string/keep_screen_on"
-            app:summaryOff="Screen will turn off normally"
-            app:summaryOn="Screen stays on while reading"
-            app:defaultValue="false" />
+            android:key="keep_screen_on"
+            android:title="@string/keep_screen_on"
+            android:summaryOff="Screen will turn off normally"
+            android:summaryOn="Screen stays on while reading"
+            android:defaultValue="false" />
 
         <SwitchPreferenceCompat
-            app:key="show_page_numbers"
-            app:title="@string/show_page_numbers"
-            app:defaultValue="true" />
+            android:key="show_page_numbers"
+            android:title="@string/show_page_numbers"
+            android:defaultValue="true" />
 
         <SwitchPreferenceCompat
-            app:key="show_progress"
-            app:title="@string/show_progress"
-            app:defaultValue="true" />
+            android:key="show_progress"
+            android:title="@string/show_progress"
+            android:defaultValue="true" />
 
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/tts_settings">
         <ListPreference
-            app:key="tts_language"
-            app:title="@string/tts_language"
-            app:summary="%s"
-            app:entries="@array/tts_languages"
-            app:entryValues="@array/tts_language_values"
-            app:defaultValue="zh-CN"
-            app:dialogTitle="@string/tts_language" />
+            android:key="tts_language"
+            android:title="@string/tts_language"
+            android:summary="%s"
+            android:entries="@array/tts_languages"
+            android:entryValues="@array/tts_language_values"
+            android:defaultValue="zh-CN"
+            android:dialogTitle="@string/tts_language" />
 
         <SeekBarPreference
-            app:key="tts_speech_rate"
-            app:title="@string/tts_speech_rate"
-            app:summary="%.1f"
-            app:defaultValue="10"
-            app:min="5"
-            app:max="30"
+            android:key="tts_speech_rate"
+            android:title="@string/tts_speech_rate"
+            android:summary="%.1f"
+            android:defaultValue="10"
+            android:min="5"
+            android:max="30"
             app:showSeekBarValue="true" />
 
         <SeekBarPreference
-            app:key="tts_pitch"
-            app:title="@string/tts_pitch"
-            app:summary="%.1f"
-            app:defaultValue="10"
-            app:min="5"
-            app:max="20"
+            android:key="tts_pitch"
+            android:title="@string/tts_pitch"
+            android:summary="%.1f"
+            android:defaultValue="10"
+            android:min="5"
+            android:max="20"
             app:showSeekBarValue="true" />
 
         <SeekBarPreference
-            app:key="tts_playback_speed"
-            app:title="@string/tts_playback_speed"
-            app:summary="%.1fx"
-            app:defaultValue="10"
-            app:min="5"
-            app:max="30"
+            android:key="tts_playback_speed"
+            android:title="@string/tts_playback_speed"
+            android:summary="%.1fx"
+            android:defaultValue="10"
+            android:min="5"
+            android:max="30"
             app:showSeekBarValue="true" />
 
         <SwitchPreferenceCompat
-            app:key="tts_highlight_text"
-            app:title="@string/tts_highlight_text"
-            app:defaultValue="true" />
+            android:key="tts_highlight_text"
+            android:title="@string/tts_highlight_text"
+            android:defaultValue="true" />
 
         <SwitchPreferenceCompat
-            app:key="tts_auto_scroll"
-            app:title="@string/tts_auto_scroll"
-            app:defaultValue="true" />
+            android:key="tts_auto_scroll"
+            android:title="@string/tts_auto_scroll"
+            android:defaultValue="true" />
 
         <SwitchPreferenceCompat
-            app:key="tts_skip_footnotes"
-            app:title="@string/tts_skip_footnotes"
-            app:defaultValue="true" />
+            android:key="tts_skip_footnotes"
+            android:title="@string/tts_skip_footnotes"
+            android:defaultValue="true" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/about">
         <Preference
-            app:key="about"
-            app:title="@string/about"
-            app:summary="@string/app_version" />
+            android:key="about"
+            android:title="@string/about"
+            android:summary="@string/app_version" />
 
         <Preference
-            app:key="check_updates"
-            app:title="Check for Updates"
-            app:summary="Check if a new version is available" />
+            android:key="check_updates"
+            android:title="Check for Updates"
+            android:summary="Check if a new version is available" />
     </PreferenceCategory>
 
 </PreferenceScreen>
