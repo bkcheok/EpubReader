@@ -18,6 +18,7 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.media.app.NotificationCompat as MediaNotificationCompat
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 
@@ -206,108 +207,80 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         tts?.shutdown()
         tts = null
         releaseWakeLock()
-        notificationManager.cancel(NOTIFICATION_ID)
-        savePreferences()
         super.onDestroy()
-    }
-
-    override fun onBind(intent: Intent?): IBinder = LocalBinder()
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        intent?.let { handleIntent(it) }
-        return START_STICKY
-    }
-
-    private fun handleIntent(intent: Intent) {
-        when (intent.action) {
-            ACTION_PLAY -> {
-                val text = intent.getStringExtra(EXTRA_TEXT) ?: ""
-                val chapterIndex = intent.getIntExtra(EXTRA_CHAPTER_INDEX, 0)
-                val chapterTitle = intent.getStringExtra(EXTRA_CHAPTER_TITLE) ?: ""
-                val chapterList = intent.getParcelableArrayListExtra<ParcelableEpubChapter>(EXTRA_CHAPTERS) 
-                    ?.map { it.toEpubChapter() } ?: emptyList()
-                speakText(text, chapterIndex, chapterTitle, chapterList)
-            }
-            ACTION_PAUSE -> pauseSpeaking()
-            ACTION_STOP -> stopSpeaking()
-            ACTION_NEXT -> playNextChapter()
-            ACTION_PREVIOUS -> playPreviousChapter()
-            ACTION_TOGGLE -> togglePlayPause()
-        }
     }
 
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             isInitialized = true
-            applyTtsSettings()
-            callbacks.values.forEach { it.onInit(true) }
-            
-            if (currentText.isNotEmpty() && !isSpeaking) {
-                speakCurrentChapter()
+            val locale = Locale.forLanguageTag(language)
+            tts?.setLanguage(locale)
+            voiceName?.let { vName ->
+                tts?.voices?.firstOrNull { it.name == vName }?.let { voice ->
+                    tts?.setVoice(voice)
+                }
             }
+            tts?.speechRate = speechRate * playbackSpeed
+            tts?.pitch = pitch
+            callbacks.values.forEach { it.onInit(true) }
         } else {
             isInitialized = false
             callbacks.values.forEach { it.onInit(false) }
-            Log.e(TAG, "TTS Initialization failed: $status")
+            Log.e(TAG, "TTS initialization failed")
         }
     }
 
-    private fun applyTtsSettings() {
-        tts?.let {
-            val locale = Locale.forLanguageTag(language)
-            val langResult = it.setLanguage(locale)
-            
-            if (langResult == TextToSpeech.LANG_MISSING_DATA || langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
-                val voices = it.voices
-                val matchingVoice = voices.firstOrNull { 
-                    it.locale.language == locale.language || 
-                    it.locale.toLanguageTag().startsWith(language.substringBefore('-'))
-                }
-                matchingVoice?.let { it.setVoice(it) }
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        intent?.action?.let { action ->
+            when (action) {
+                ACTION_PLAY -> resumeSpeaking()
+                ACTION_PAUSE -> pauseSpeaking()
+                ACTION_STOP -> stopSpeaking()
+                ACTION_NEXT -> playNextChapter()
+                ACTION_PREVIOUS -> playPreviousChapter()
+                ACTION_TOGGLE -> togglePlayPause()
             }
-            
-            voiceName?.let { name ->
-                val voice = it.voices.firstOrNull { it.name == name }
-                voice?.let { it.setVoice(it) }
+        }
+        
+        intent?.let { i ->
+            i.getStringExtra(EXTRA_TEXT)?.let { text ->
+                currentText = text
+                currentChapterIndex = i.getIntExtra(EXTRA_CHAPTER_INDEX, 0)
+                currentChapterTitle = i.getStringExtra(EXTRA_CHAPTER_TITLE) ?: ""
+                chapters = i.getParcelableArrayListExtra(EXTRA_CHAPTERS)?.map { it as EpubChapter } ?: emptyList()
+                speakCurrentChapter()
             }
-            
-            it.speechRate = speechRate * playbackSpeed
-            it.pitch = pitch
-            
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                val attributes = AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                    .build()
-                it.setAudioAttributes(attributes)
-            }
+        }
+        
+        return START_STICKY
+    }
+
+    override fun onBind(intent: Intent?): IBinder {
+        return LocalBinder()
+    }
+
+    fun setChapters(chapters: List<EpubBook>) {
+        this.chapters = chapters.flatMap { it.flattenedChapters }
+    }
+
+    fun setCurrentChapter(index: Int) {
+        if (index in chapters.indices) {
+            currentChapterIndex = index
+            currentChapterTitle = chapters[index].title
+            currentText = chapters[index].content
         }
     }
 
-    fun speakText(
-        text: String,
-        chapterIndex: Int = 0,
-        chapterTitle: String = "",
-        chapterList: List<EpubChapter> = emptyList()
-    ) {
-        if (!isInitialized) {
-            currentText = text
-            currentChapterIndex = chapterIndex
-            currentChapterTitle = chapterTitle
-            chapters = chapterList
-            return
-        }
-
+    fun speakText(text: String, chapterIndex: Int, chapterTitle: String, allChapters: List<EpubChapter>) {
         currentText = text
         currentChapterIndex = chapterIndex
         currentChapterTitle = chapterTitle
-        chapters = chapterList
-        
+        chapters = allChapters
         speakCurrentChapter()
     }
 
     private fun speakCurrentChapter() {
-        if (currentText.isEmpty()) return
+        if (currentText.isBlank()) return
         
         val utteranceId = "chapter_${currentChapterIndex}_${System.currentTimeMillis()}"
         
@@ -402,7 +375,11 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
 
     fun setVoice(voice: String?) {
         voiceName = voice
-        voice?.let { tts?.setVoice(tts?.voices?.firstOrNull { it.name == voice }) }
+        voice?.let { vName ->
+            tts?.voices?.firstOrNull { it.name == vName }?.let { v ->
+                tts?.setVoice(v)
+            }
+        }
         savePreferences()
     }
 
@@ -503,7 +480,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             .addAction(android.R.drawable.ic_media_next, "Next", nextPending)
             .addAction(android.R.drawable.ic_media_stop, "Stop", stopPending)
             .setStyle(
-                androidx.media.app.NotificationCompat.MediaStyle()
+                MediaNotificationCompat.MediaStyle()
                     .setShowActionsInCompactView(0, 1, 2)
             )
             .build()
