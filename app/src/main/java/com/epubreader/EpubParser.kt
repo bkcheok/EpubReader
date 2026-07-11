@@ -32,10 +32,10 @@ class EpubParser(private val context: Context) {
     fun parseFromUri(uri: Uri): EpubBook {
         val inputStream = context.contentResolver.openInputStream(uri)
             ?: throw Exception("Cannot open URI: $uri")
-
+        
         val tempFile = File(context.cacheDir, "temp_${System.currentTimeMillis()}.epub")
         tempFile.deleteOnExit()
-
+        
         FileOutputStream(tempFile).use { output ->
             inputStream.copyTo(output)
         }
@@ -160,7 +160,7 @@ class EpubParser(private val context: Context) {
     ): List<TocItem> {
         val navItem = manifestItems.values.firstOrNull { it.properties.contains("nav") }
             ?: manifestItems.values.firstOrNull { it.mediaType == NAV_MIME }
-
+        
         if (navItem != null) {
             val navPath = opfPath.substringBeforeLast('/') + "/" + navItem.href
             val navEntry = zipFile.getEntry(navPath)
@@ -169,7 +169,7 @@ class EpubParser(private val context: Context) {
                 return parseNavToc(navContent, opfPath.substringBeforeLast('/') + "/")
             }
         }
-
+        
         val ncxItem = manifestItems.values.firstOrNull { it.mediaType == NCX_MIME }
         if (ncxItem != null) {
             val ncxPath = opfPath.substringBeforeLast('/') + "/" + ncxItem.href
@@ -179,7 +179,7 @@ class EpubParser(private val context: Context) {
                 return parseNcxToc(ncxContent)
             }
         }
-
+        
         return emptyList()
     }
 
@@ -187,7 +187,7 @@ class EpubParser(private val context: Context) {
         val doc = Jsoup.parse(navContent, "", org.jsoup.parser.Parser.xmlParser())
         val nav = doc.select("nav[epub\\:type=toc], nav[typeof=toc]").first()
             ?: doc.select("nav").first()
-
+        
         return if (nav != null) {
             parseNavList(nav.select("ol > li"), basePath, 0)
         } else emptyList()
@@ -203,7 +203,7 @@ class EpubParser(private val context: Context) {
             val childItems = if (children.isNotEmpty()) {
                 parseNavList(children, basePath, level + 1)
             } else emptyList()
-
+            
             TocItem(title, fullHref, childItems, level)
         }
     }
@@ -225,7 +225,7 @@ class EpubParser(private val context: Context) {
             val childItems = if (children.isNotEmpty()) {
                 parseNcxNavPoints(children, level + 1)
             } else emptyList()
-
+            
             TocItem(label, href, childItems, level)
         }
     }
@@ -239,7 +239,7 @@ class EpubParser(private val context: Context) {
     ): List<EpubChapter> {
         val chapters = mutableListOf<EpubChapter>()
         var order = 0
-
+        
         val tocMap = mutableMapOf<String, TocItem>()
         fun flattenToc(items: List<TocItem>) {
             items.forEach { item ->
@@ -248,7 +248,7 @@ class EpubParser(private val context: Context) {
             }
         }
         flattenToc(toc)
-
+        
         spineItems.forEach { idref ->
             manifestItems[idref]?.let { item ->
                 if (item.mediaType == XHTML_MIME || item.mediaType == HTML_MIME) {
@@ -270,7 +270,7 @@ class EpubParser(private val context: Context) {
                 }
             }
         }
-
+        
         return chapters
     }
 
@@ -282,18 +282,18 @@ class EpubParser(private val context: Context) {
 
     private fun cleanHtmlContent(html: String): String {
         if (html.isBlank()) return ""
-
+        
         val doc = Jsoup.parse(html, "", org.jsoup.parser.Parser.xmlParser())
-
+        
         doc.select("script, style, link[rel=stylesheet], meta, noselect").remove()
-
+        
         doc.select("img").forEach { img ->
             val src = img.attr("src")
             if (src.isNotEmpty() && !src.startsWith("data:") && !src.startsWith("http")) {
                 img.attr("data-original-src", src)
             }
         }
-
+        
         val head = doc.head()
         if (head.isNotEmpty()) {
             head.append("""
@@ -375,7 +375,7 @@ class EpubParser(private val context: Context) {
                 </style>
             """.trimIndent())
         }
-
+        
         return doc.html()
     }
 
