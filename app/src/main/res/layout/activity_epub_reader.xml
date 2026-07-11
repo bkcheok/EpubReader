@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".EpubReaderActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/readerToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.Material3.Light"
+        app:title="@string/app_name" />
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:layout_marginBottom="@dimen/tts_control_height"
+        android:fillViewport="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <WebView
+            android:id="@+id/webView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- TTS Control Bar at Bottom -->
+    <LinearLayout
+        android:id="@+id/ttsControlBar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/tts_control_height"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:background="@color/tts_control_bg"
+        android:visibility="gone"
+        android:elevation="8dp">
+
+        <!-- Progress Bar -->
+        <ProgressBar
+            android:id="@+id/ttsProgress"
+            style="@style/Widget.MaterialComponents.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/progress_height"
+            android:progressDrawable="@drawable/tts_progress_drawable/tts_progress_drawable"
+            android:max="100"
+            android:progress="0" />
+
+        <!-- Control Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:padding="@dimen/margin_small">
+
+            <ImageButton
+                android:id="@+id/btnTtsPrevious"
+                android:layout_width="@dimen/tts_button_size"
+                android:layout_height="@dimen/tts_button_size"
+                android:src="@android:drawable/ic_media_previous"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/previous"
+                android:tint="?attr/colorOnSurface" />
+
+            <ImageButton
+                android:id="@+id/btnTtsPlayPause"
+                android:layout_width="@dimen/tts_button_size"
+                android:layout_height="@dimen/tts_button_size"
+                android:src="@android:drawable/ic_media_play"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/play"
+                android:tint="?attr/colorOnSurface"
+                android:layout_marginHorizontal="@dimen/margin_normal" />
+
+            <ImageButton
+                android:id="@+id/btnTtsNext"
+                android:layout_width="@dimen/tts_button_size"
+                android:layout_height="@dimen/tts_button_size"
+                android:src="@android:drawable/ic_media_next"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/next"
+                android:tint="?attr/colorOnSurface" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/tvTtsStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tts_stopped"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="?attr/colorOnSurface"
+                android:layout_gravity="center_vertical" />
+
+            <ImageButton
+                android:id="@+id/btnTtsSettings"
+                android:layout_width="@dimen/tts_button_size"
+                android:layout_height="@dimen/tts_button_size"
+                android:src="@android:drawable/ic_menu_preferences"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/tts_settings"
+                android:tint="?attr/colorOnSurface"
+                android:layout_marginStart="@dimen/margin_normal" />
+
+            <ImageButton
+                android:id="@+id/btnTtsStop"
+                android:layout_width="@dimen/tts_button_size"
+                android:layout_height="@dimen/tts_button_size"
+                android:src="@android:drawable/ic_media_stop"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/stop"
+                android:tint="?attr/colorOnSurface"
+                android:layout_marginStart="@dimen/margin_small" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Floating Action Button for TTS Toggle -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabTtsToggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        android:layout_marginBottom="140dp"
+        android:contentDescription="@string/tts_settings"
+        android:src="@android:drawable/ic_media_play"
+        app:backgroundTint="@color/tts_playing" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

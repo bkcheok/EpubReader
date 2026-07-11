@@ -1,0 +1,50 @@
+[
+    {
+        "merged": "com.epubreader.app-merged_res-58:/layout_tts_bottom_sheet.xml.flat",
+        "source": "com.epubreader.app-main-60:/layout/tts_bottom_sheet.xml"
+    },
+    {
+        "merged": "com.epubreader.app-merged_res-58:/menu_drawer_menu.xml.flat",
+        "source": "com.epubreader.app-main-60:/menu/drawer_menu.xml"
+    },
+    {
+        "merged": "com.epubreader.app-merged_res-58:/layout_activity_settings.xml.flat",
+        "source": "com.epubreader.app-main-60:/layout/activity_settings.xml"
+    },
+    {
+        "merged": "com.epubreader.app-merged_res-58:/layout_activity_epub_reader.xml.flat",
+        "source": "com.epubreader.app-main-60:/layout/activity_epub_reader.xml"
+    },
+    {
+        "merged": "com.epubreader.app-merged_res-58:/layout_activity_main.xml.flat",
+        "source": "com.epubreader.app-main-60:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.epubreader.app-merged_res-58:/xml_backup_rules.xml.flat",
+        "source": "com.epubreader.app-main-60:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "com.epubreader.app-merged_res-58:/layout_nav_header.xml.flat",
+        "source": "com.epubreader.app-main-60:/layout/nav_header.xml"
+    },
+    {
+        "merged": "com.epubreader.app-merged_res-58:/xml_data_extraction_rules.xml.flat",
+        "source": "com.epubreader.app-main-60:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.epubreader.app-merged_res-58:/drawable_tts_progress_drawable.xml.flat",
+        "source": "com.epubreader.app-main-60:/drawable/tts_progress_drawable.xml"
+    },
+    {
+        "merged": "com.epubreader.app-merged_res-58:/menu_menu_main.xml.flat",
+        "source": "com.epubreader.app-main-60:/menu/menu_main.xml"
+    },
+    {
+        "merged": "com.epubreader.app-merged_res-58:/layout_activity_tts_settings.xml.flat",
+        "source": "com.epubreader.app-main-60:/layout/activity_tts_settings.xml"
+    },
+    {
+        "merged": "com.epubreader.app-merged_res-58:/xml_preferences.xml.flat",
+        "source": "com.epubreader.app-main-60:/xml/preferences.xml"
+    }
+]

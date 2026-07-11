@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/reading_settings">
+        <ListPreference
+            app:key="theme"
+            app:title="@string/theme"
+            app:summary="%s"
+            app:entries="@array/reading_themes"
+            app:entryValues="@array/reading_themes"
+            app:defaultValue="System Default"
+            app:dialogTitle="@string/theme" />
+
+        <SeekBarPreference
+            app:key="font_size"
+            app:title="@string/font_size"
+            app:summary="%d px"
+            app:defaultValue="16"
+            app:min="12"
+            app:max="36"
+            app:showSeekBarValue="true" />
+
+        <SeekBarPreference
+            app:key="line_height"
+            app:title="@string/line_height"
+            app:summary="%.1f"
+            app:defaultValue="150"
+            app:min="100"
+            app:max="250"
+            app:showSeekBarValue="true" />
+
+        <SeekBarPreference
+            app:key="margin"
+            app:title="@string/margin"
+            app:summary="%d px"
+            app:defaultValue="16"
+            app:min="8"
+            app:max="48"
+            app:showSeekBarValue="true" />
+
+        <ListPreference
+            app:key="font_family"
+            app:title="@string/font_family"
+            app:summary="%s"
+            app:entries="@array/font_families"
+            app:entryValues="@array/font_family_values"
+            app:defaultValue="sans-serif"
+            app:dialogTitle="@string/font_family" />
+
+        <ListPreference
+            app:key="text_align"
+            app:title="@string/text_align"
+            app:summary="%s"
+            app:entries="@array/text_alignments"
+            app:entryValues="@array/text_alignments"
+            app:defaultValue="justify"
+            app:dialogTitle="@string/text_align" />
+
+        <ListPreference
+            app:key="scroll_mode"
+            app:title="@string/scroll_mode"
+            app:summary="%s"
+            app:entries="@array/scroll_modes"
+            app:entryValues="@array/scroll_mode_values"
+            app:defaultValue="vertical"
+            app:dialogTitle="@string/scroll_mode" />
+
+        <SwitchPreferenceCompat
+            app:key="keep_screen_on"
+            app:title="@string/keep_screen_on"
+            app:summaryOff="Screen will turn off normally"
+            app:summaryOn="Screen stays on while reading"
+            app:defaultValue="false" />
+
+        <SwitchPreferenceCompat
+            app:key="show_page_numbers"
+            app:title="@string/show_page_numbers"
+            app:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            app:key="show_progress"
+            app:title="@string/show_progress"
+            app:defaultValue="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/tts_settings">
+        <ListPreference
+            app:key="tts_language"
+            app:title="@string/tts_language"
+            app:summary="%s"
+            app:entries="@array/tts_languages"
+            app:entryValues="@array/tts_language_values"
+            app:defaultValue="zh-CN"
+            app:dialogTitle="@string/tts_language" />
+
+        <SeekBarPreference
+            app:key="tts_speech_rate"
+            app:title="@string/tts_speech_rate"
+            app:summary="%.1f"
+            app:defaultValue="10"
+            app:min="5"
+            app:max="30"
+            app:showSeekBarValue="true" />
+
+        <SeekBarPreference
+            app:key="tts_pitch"
+            app:title="@string/tts_pitch"
+            app:summary="%.1f"
+            app:defaultValue="10"
+            app:min="5"
+            app:max="20"
+            app:showSeekBarValue="true" />
+
+        <SeekBarPreference
+            app:key="tts_playback_speed"
+            app:title="@string/tts_playback_speed"
+            app:summary="%.1fx"
+            app:defaultValue="10"
+            app:min="5"
+            app:max="30"
+            app:showSeekBarValue="true" />
+
+        <SwitchPreferenceCompat
+            app:key="tts_highlight_text"
+            app:title="@string/tts_highlight_text"
+            app:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            app:key="tts_auto_scroll"
+            app:title="@string/tts_auto_scroll"
+            app:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            app:key="tts_skip_footnotes"
+            app:title="@string/tts_skip_footnotes"
+            app:defaultValue="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/about">
+        <Preference
+            app:key="about"
+            app:title="@string/about"
+            app:summary="@string/app_version" />
+
+        <Preference
+            app:key="check_updates"
+            app:title="Check for Updates"
+            app:summary="Check if a new version is available" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -1,0 +1,26 @@
+[
+    {
+        "merged": "com.epubreader.app-mergeDebugResources-57:/layout/activity_main.xml",
+        "source": "com.epubreader.app-main-60:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.epubreader.app-mergeDebugResources-57:/layout/activity_settings.xml",
+        "source": "com.epubreader.app-main-60:/layout/activity_settings.xml"
+    },
+    {
+        "merged": "com.epubreader.app-mergeDebugResources-57:/layout/tts_bottom_sheet.xml",
+        "source": "com.epubreader.app-main-60:/layout/tts_bottom_sheet.xml"
+    },
+    {
+        "merged": "com.epubreader.app-mergeDebugResources-57:/layout/activity_tts_settings.xml",
+        "source": "com.epubreader.app-main-60:/layout/activity_tts_settings.xml"
+    },
+    {
+        "merged": "com.epubreader.app-mergeDebugResources-57:/layout/nav_header.xml",
+        "source": "com.epubreader.app-main-60:/layout/nav_header.xml"
+    },
+    {
+        "merged": "com.epubreader.app-mergeDebugResources-57:/layout/activity_epub_reader.xml",
+        "source": "com.epubreader.app-main-60:/layout/activity_epub_reader.xml"
+    }
+]

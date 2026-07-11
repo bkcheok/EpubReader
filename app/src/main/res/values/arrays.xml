@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="tts_languages">
+        <item>Chinese (Mandarin Simplified)</item>
+        <item>Chinese (Mandarin Traditional)</item>
+        <item>Chinese (Cantonese)</item>
+        <item>English (US)</item>
+        <item>English (UK)</item>
+        <item>Japanese</item>
+        <item>Korean</item>
+        <item>French</item>
+        <item>German</item>
+        <item>Spanish</item>
+        <item>Italian</item>
+        <item>Portuguese (Brazil)</item>
+        <item>Russian</item>
+    </string-array>
+
+    <string-array name="tts_language_values">
+        <item>zh-CN</item>
+        <item>zh-TW</item>
+        <item>zh-HK</item>
+        <item>en-US</item>
+        <item>en-GB</item>
+        <item>ja-JP</item>
+        <item>ko-KR</item>
+        <item>fr-FR</item>
+        <item>de-DE</item>
+        <item>es-ES</item>
+        <item>it-IT</item>
+        <item>pt-BR</item>
+        <item>ru-RU</item>
+    </string-array>
+
+    <string-array name="reading_themes">
+        <item>System Default</item>
+        <item>Light</item>
+        <item>Dark</item>
+        <item>Sepia</item>
+    </string-array>
+
+    <string-array name="reading_theme_values">
+        <item>system</item>
+        <item>light</item>
+        <item>dark</item>
+        <item>sepia</item>
+    </string-array>
+
+    <string-array name="scroll_modes">
+        <item>Vertical Scroll</item>
+        <item>Horizontal Scroll</item>
+        <item>Page by Page</item>
+    </string-array>
+
+    <string-array name="scroll_mode_values">
+        <item>vertical</item>
+        <item>horizontal</item>
+        <item>page</item>
+    </string-array>
+
+    <string-array name="font_families">
+        <item>Sans Serif (System)</item>
+        <item>Serif (System)</item>
+        <item>Monospace (System)</item>
+        <item>Noto Sans SC (Chinese Simplified)</item>
+        <item>Noto Sans TC (Chinese Traditional)</item>
+        <item>Noto Serif SC (Chinese Simplified)</item>
+        <item>Noto Serif TC (Chinese Traditional)</item>
+    </string-array>
+
+    <string-array name="font_family_values">
+        <item>sans-serif</item>
+        <item>serif</item>
+        <item>monospace</item>
+        <item>sans-serif-light</item>
+        <item>sans-serif-light</item>
+        <item>serif</item>
+        <item>serif</item>
+    </string-array>
+
+    <string-array name="text_alignments">
+        <item>Left</item>
+        <item>Center</item>
+        <item>Right</item>
+        <item>Justify</item>
+    </string-array>
+
+    <string-array name="text_align_values">
+        <item>left</item>
+        <item>center</item>
+        <item>right</item>
+        <item>justify</item>
+    </string-array>
+</resources>
