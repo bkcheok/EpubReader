@@ -70,7 +70,7 @@ data class EpubBook(
         coverImage = parcel.createByteArray(),
         chapters = parcel.createTypedArrayList(EpubChapter.CREATOR) ?: emptyList(),
         spine = parcel.createStringArrayList() ?: emptyList(),
-        metadata = parcel.readHashMap(String::class.java, String::class.java) ?: emptyMap(),
+        metadata = parcel.readHashMap(String::class.java.classLoader, String::class.java, String::class.java) ?: emptyMap(),
         filePath = parcel.readString() ?: ""
     )
 

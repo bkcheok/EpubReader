@@ -8,9 +8,6 @@ import com.epubreader.EpubSettings
 import com.epubreader.ReadingTheme
 import com.epubreader.ScrollMode
 import com.epubreader.TextAlignment
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Entity(tableName = "epub_books")
@@ -85,5 +82,5 @@ class Converters {
     fun metadataToJson(metadata: Map<String, String>): String = json.encodeToString(metadata)
     
     @TypeConverter
-    fun jsonToMetadata(json: String): Map<String, String> = json.decodeFromString()
+    fun jsonToMetadata(json: String): Map<String, String> = json.decodeFromString<Map<String, String>>()
 }

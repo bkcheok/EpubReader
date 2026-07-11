@@ -12,7 +12,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import android.widget.AdapterView
 
 class TtsSettingsActivity : AppCompatActivity() {
 
@@ -150,11 +149,6 @@ class TtsSettingsActivity : AppCompatActivity() {
         }
     }
 
-    private fun bindTtsService() {
-        val intent = Intent(this, TtsService::class.java)
-        bindService(intent, serviceConnection, android.content.Context.BIND_AUTO_CREATE)
-    }
-
     private fun loadTtsSettings() {
         ttsService?.let { service ->
             findViewById<SeekBar>(R.id.seek_speech_rate).progress = ((service.getSpeechRate() - 0.5f) * 100).toInt()
@@ -177,9 +171,6 @@ class TtsSettingsActivity : AppCompatActivity() {
         }
     }
 
-    private var availableVoices: List<TextToSpeech.Voice> = emptyList()
-    private var currentVoiceIndex = 0
-    
     private fun populateVoices() {
         ttsService?.let { service ->
             availableVoices = service.getAvailableVoices()
@@ -205,70 +196,6 @@ class TtsSettingsActivity : AppCompatActivity() {
                     if (voiceIndex >= 0) findViewById<Spinner>(R.id.spinner_voice).setSelection(voiceIndex)
                 }
             }
-        }
-    }
-
-    private fun loadTtsSettings() {
-        ttsService?.let { service ->
-            findViewById<SeekBar>(R.id.seek_speech_rate).progress = ((service.getSpeechRate() - 0.5f) * 100).toInt()
-            findViewById<TextView>(R.id.tv_speech_rate_value).text = String.format("%.2fx", service.getSpeechRate())
-            
-            findViewById<SeekBar>(R.id.seek_pitch).progress = ((service.getPitch() - 0.5f) * 100).toInt()
-            findViewById<TextView>(R.id.tv_pitch_value).text = String.format("%.2f", service.getPitch())
-            
-            findViewById<SeekBar>(R.id.seek_playback_speed).progress = ((service.getPlaybackSpeed() - 0.5f) * 100).toInt()
-            findViewById<TextView>(R.id.tv_playback_speed_value).text = String.format("%.2fx", service.getPlaybackSpeed())
-            
-            // Set language spinner
-            val currentLang = service.getLanguage()
-            val languages = resources.getStringArray(R.array.tts_languages)
-            val index = languages.indexOfFirst { it.startsWith(currentLang) }
-            if (index >= 0) findViewById<Spinner>(R.id.spinner_language).setSelection(index)
-            
-            // Populate voices
-            populateVoices()
-        }
-    }
-
-    private var availableVoices: List<TextToSpeech.Voice> = emptyList()
-    private var currentVoiceIndex = 0
-    
-    private fun populateVoices() {
-        ttsService?.let { service ->
-            availableVoices = service.getAvailableVoices()
-            
-            if (availableVoices.isEmpty()) {
-                val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf("No voices available"))
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                findViewById<Spinner>(R.id.spinner_voice).adapter = adapter
-            } else {
-                val voiceNames = availableVoices.map { voice ->
-                    val locale = voice.locale
-                    "${voice.name} (${locale.toLanguageTag()}) ${if (voice.quality == TextToSpeech.Voice.QUALITY_HIGH) "⭐" else if (voice.quality == TextToSpeech.Voice.QUALITY_NORMAL) "★" else ""}"
-                }.toTypedArray()
-                
-                val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, voiceNames)
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                findViewById<Spinner>(R.id.spinner_voice).adapter = adapter
-                
-                // Select current voice
-                val currentVoiceName = service.getVoiceName()
-                if (currentVoiceName != null) {
-                    val voiceIndex = availableVoices.indexOfFirst { it.name == currentVoiceName }
-                    if (voiceIndex >= 0) findViewById<Spinner>(R.id.spinner_voice).setSelection(voiceIndex)
-                }
-            }
-        }
-    }
-
-    private fun testTts() {
-        ttsService?.let { service ->
-            val testText = when {
-                findViewById<Spinner>(R.id.spinner_language).selectedItem.toString().startsWith("zh") -> "你好，这是中文语音测试。欢迎使用EPUB阅读器。"
-                else -> "Hello, this is a TTS test. Welcome to EPUB Reader."
-            }
-            service.speakText(testText, 0, "Test", emptyList())
-            Toast.makeText(this, "Playing test...", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -283,19 +210,5 @@ class TtsSettingsActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         finish()
         return true
-    }
-    
-    private val serviceConnection = object : android.content.ServiceConnection {
-        override fun onServiceConnected(name: android.content.ComponentName?, service: android.os.IBinder?) {
-            val binder = service as TtsService.LocalBinder
-            ttsService = binder.getService()
-            isBound = true
-            loadTtsSettings()
-        }
-        
-        override fun onServiceDisconnected(name: android.content.ComponentName?) {
-            isBound = false
-            ttsService = null
-        }
     }
 }
