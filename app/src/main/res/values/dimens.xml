@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="text_size_small">12sp</dimen>
@@ -11,4 +12,6 @@
     <dimen name="tts_button_size">56dp</dimen>
     <dimen name="progress_height">4dp</dimen>
     <dimen name="toolbar_height">56dp</dimen>
+    <dimen name="nav_header_height">160dp</dimen>
+    <dimen name="nav_header_avatar_size">56dp</dimen>
 </resources>

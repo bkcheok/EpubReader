@@ -8,8 +8,8 @@
             app:title="@string/theme"
             app:summary="%s"
             app:entries="@array/reading_themes"
-            app:entryValues="@array/reading_themes"
-            app:defaultValue="System Default"
+            app:entryValues="@array/reading_theme_values"
+            app:defaultValue="system"
             app:dialogTitle="@string/theme" />
 
         <SeekBarPreference
@@ -53,7 +53,7 @@
             app:title="@string/text_align"
             app:summary="%s"
             app:entries="@array/text_alignments"
-            app:entryValues="@array/text_alignments"
+            app:entryValues="@array/text_align_values"
             app:defaultValue="justify"
             app:dialogTitle="@string/text_align" />
 
@@ -85,7 +85,7 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/tts_settings">
+    <PreferenceCategory app:title="@string/tts_settings_title">
         <ListPreference
             app:key="tts_language"
             app:title="@string/tts_language"
@@ -138,7 +138,7 @@
             app:defaultValue="true" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/about">
+    <PreferenceCategory app:title="@string/about_section">
         <Preference
             app:key="about"
             app:title="@string/about"
