@@ -150,6 +150,13 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     }
 
     private fun initTts() {
+        // Capture these for the inner class
+        val capturedSpeechRate = speechRate
+        val capturedPitch = pitch
+        val capturedPlaybackSpeed = playbackSpeed
+        val capturedLanguage = language
+        val capturedVoiceName = voiceName
+        
         tts = TextToSpeech(this, this)
         tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String) {
@@ -181,10 +188,6 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 callbacks.values.forEach { it.onStateChanged(false, false) }
                 Log.e(TAG, "TTS Error: $errorCode")
                 updateNotification()
-            }
-
-            override fun onError(utteranceId: String, errorCode: Int, errorMessage: String) {
-                onError(utteranceId, errorCode)
             }
 
             override fun onRangeStart(utteranceId: String, start: Int, end: Int, frame: Int) {
