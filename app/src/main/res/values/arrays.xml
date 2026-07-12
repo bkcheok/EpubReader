@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="tts_languages">
-        <item>Chinese (Mandarin Simplified)</item>
-        <item>Chinese (Mandarin Traditional)</item>
-        <item>Chinese (Cantonese)</item>
-        <item>English (US)</item>
-        <item>English (UK)</item>
-        <item>Japanese</item>
-        <item>Korean</item>
-        <item>French</item>
-        <item>German</item>
-        <item>Spanish</item>
-        <item>Italian</item>
-        <item>Portuguese (Brazil)</item>
-        <item>Russian</item>
+        <item>zh-CN - Chinese (Mandarin Simplified)</item>
+        <item>zh-TW - Chinese (Mandarin Traditional)</item>
+        <item>zh-HK - Chinese (Cantonese)</item>
+        <item>en-US - English (US)</item>
+        <item>en-GB - English (UK)</item>
+        <item>ja-JP - Japanese</item>
+        <item>ko-KR - Korean</item>
+        <item>fr-FR - French</item>
+        <item>de-DE - German</item>
+        <item>es-ES - Spanish</item>
+        <item>it-IT - Italian</item>
+        <item>pt-PT - Portuguese (Portugal)</item>
+        <item>ru-RU - Russian</item>
     </string-array>
 
     <string-array name="tts_language_values">
@@ -28,7 +28,7 @@
         <item>de-DE</item>
         <item>es-ES</item>
         <item>it-IT</item>
-        <item>pt-BR</item>
+        <item>pt-PT</item>
         <item>ru-RU</item>
     </string-array>
 
