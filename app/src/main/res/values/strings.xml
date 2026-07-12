@@ -26,6 +26,7 @@
     <string name="tts_settings">TTS Settings</string>
     <string name="tts_toggle">TTS</string>
     <string name="tts_playing">Playing</string>
+    <string name="tts_play">Play</string>
     <string name="tts_paused">Paused</string>
     <string name="tts_stopped">Stopped</string>
     <string name="tts_ready">Ready to play</string>
