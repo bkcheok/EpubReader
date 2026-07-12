@@ -37,28 +37,15 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Clean project (force fresh)
+      - name: Clean project
         run: ./gradlew clean
 
-      - name: Full source verification
+      - name: Build Debug APK (no cache)
         run: |
-          echo "=== TtsService.kt member variables (lines 65-85) ==="
-          sed -n '65,85p' app/src/main/java/com/epubreader/TtsService.kt
-          echo ""
-          echo "=== TtsService.kt onInit method (lines 230-250) ==="
-          sed -n '230,250p' app/src/main/java/com/epubreader/TtsService.kt
-          echo ""
-          echo "=== TtsService.kt UtteranceProgressListener (lines 155-220) ==="
-          sed -n '155,220p' app/src/main/java/com/epubreader/TtsService.kt
-          echo ""
-          echo "=== TtsSettingsActivity.kt imports ==="
-          head -30 app/src/main/java/com/epubreader/TtsSettingsActivity.kt
-          echo ""
-          echo "=== TtsSettingsActivity.kt spinner adapter ==="
-          sed -n '180,195p' app/src/main/java/com/epubreader/TtsSettingsActivity.kt
-
-      - name: Build Debug APK (no cache, no daemon)
-        run: ./gradlew assembleDebug --no-daemon --no-build-cache --no-configuration-cache --info
+          ./gradlew assembleDebug \
+            -Dorg.gradle.daemon=false \
+            -Dorg.gradle.caching=false \
+            -Dorg.gradle.configuration-cache=false
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
