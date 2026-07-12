@@ -150,6 +150,13 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     }
 
     private fun initTts() {
+        // Capture variables for inner class access
+        val currentSpeechRate = speechRate
+        val currentPitch = pitch
+        val currentLanguage = language
+        val currentVoiceName = voiceName
+        val currentPlaybackSpeed = playbackSpeed
+        
         tts = TextToSpeech(this, this)
         tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String) {
@@ -194,6 +201,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 updateNotification()
             }
 
+            // Non-override helper for deprecated 3-param version
             @Suppress("DEPRECATION")
             fun onError(utteranceId: String, errorCode: Int, errorMessage: String) {
                 onError(utteranceId, errorCode)
