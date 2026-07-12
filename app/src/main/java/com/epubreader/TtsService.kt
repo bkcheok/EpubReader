@@ -174,8 +174,8 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 updateNotification()
             }
 
+            // REQUIRED abstract method - must be implemented
             override fun onError(utteranceId: String) {
-                // Required abstract method - delegate to detailed error handler
                 isSpeaking = false
                 isPaused = false
                 callbacks.values.forEach { it.onError(utteranceId, TextToSpeech.ERROR) }
