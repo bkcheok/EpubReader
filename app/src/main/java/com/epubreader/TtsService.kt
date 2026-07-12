@@ -150,13 +150,6 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     }
 
     private fun initTts() {
-        // Capture variables for inner class
-        val capturedSpeechRate = speechRate
-        val capturedPitch = pitch
-        val capturedLanguage = language
-        val capturedVoiceName = voiceName
-        val capturedPlaybackSpeed = playbackSpeed
-        
         tts = TextToSpeech(this, this)
         tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String) {
@@ -181,6 +174,17 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 updateNotification()
             }
 
+            override fun onError(utteranceId: String) {
+                // Required abstract method - delegate to detailed error handler
+                isSpeaking = false
+                isPaused = false
+                callbacks.values.forEach { it.onError(utteranceId, TextToSpeech.ERROR) }
+                callbacks.values.forEach { it.onStateChanged(false, false) }
+                Log.e(TAG, "TTS Error: utteranceId=$utteranceId")
+                updateNotification()
+            }
+
+            @Suppress("DEPRECATION")
             override fun onError(utteranceId: String, errorCode: Int) {
                 isSpeaking = false
                 isPaused = false
