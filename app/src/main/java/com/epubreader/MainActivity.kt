@@ -144,7 +144,6 @@ class MainActivity : AppCompatActivity() {
         settings.standardFontFamily = "sans-serif"
         settings.sansSerifFontFamily = "sans-serif"
         settings.serifFontFamily = "serif"
-        settings.monospaceFontFamily = "monospace"
         settings.cursiveFontFamily = "cursive"
         settings.fantasyFontFamily = "fantasy"
 

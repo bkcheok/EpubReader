@@ -84,6 +84,9 @@ dependencies {
     // Media (for TTS notification)
     implementation("androidx.media:media:1.6.0")
     
+    // Preferences
+    implementation("androidx.preference:preference-ktx:1.2.0")
+    
     // Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
