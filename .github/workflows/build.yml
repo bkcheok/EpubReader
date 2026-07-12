@@ -46,34 +46,18 @@ jobs:
           rm -rf app/.gradle
           ./gradlew clean --no-daemon
 
-      - name: COMPREHENSIVE source verification (pre-build)
+      - name: PRE-COMPILATION source verification
         run: |
-          echo "=== FILE: TtsService.kt (lines 210-230) ==="
+          echo "=== TtsService.kt onInit (lines 210-230) ==="
           sed -n '210,230p' app/src/main/java/com/epubreader/TtsService.kt
           echo ""
-          echo "=== FILE: TtsService.kt (member variables) ==="
+          echo "=== TtsService.kt member variables ==="
           sed -n '70,85p' app/src/main/java/com/epubreader/TtsService.kt
           echo ""
-          echo "=== FILE: TtsSettingsActivity.kt (first 30 lines) ==="
-          head -30 app/src/main/java/com/epubreader/TtsSettingsActivity.kt
-          echo ""
-          echo "=== FILE: TtsSettingsActivity.kt (lines 175-195) ==="
-          sed -n '175,195p' app/src/main/java/com/epubreader/TtsSettingsActivity.kt
+          echo "=== TtsSettingsActivity.kt imports ==="
+          head -15 app/src/main/java/com/epubreader/TtsSettingsActivity.kt
 
-      - name: Verify source RIGHT BEFORE COMPILATION
-        run: |
-          echo "=== PRE-COMPILATION CHECK ==="
-          echo "TtsService.kt line count: $(wc -l < app/src/main/java/com/epubreader/TtsService.kt)"
-          echo "TtsService.kt onInit speechRate/pitch lines:"
-          grep -n "speechRate\|pitch" app/src/main/java/com/epubreader/TtsService.kt | head -20
-          echo ""
-          echo "TtsSettingsActivity.kt Voice import:"
-          grep -n "Voice" app/src/main/java/com/epubreader/TtsSettingsActivity.kt | head -5
-          echo ""
-          echo "TtsSettingsActivity.kt ArrayAdapter:"
-          grep -n "ArrayAdapter" app/src/main/java/com/epubreader/TtsSettingsActivity.kt
-
-      - name: Build Debug APK (no cache, fresh, rerun tasks)
+      - name: Disable KSP and build Debug APK
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.caching=false -Dorg.gradle.configuration-cache=false"
         run: |
@@ -83,7 +67,8 @@ jobs:
             --no-configuration-cache \
             --offline=false \
             --rerun-tasks \
-            --info
+            --info \
+            -Pksp.enabled=false
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
