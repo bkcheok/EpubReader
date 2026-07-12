@@ -171,9 +171,6 @@ class TtsSettingsActivity : AppCompatActivity() {
         }
     }
 
-    private var availableVoices: List<TextToSpeech.Voice> = emptyList()
-    private var currentVoiceIndex = 0
-    
     private fun populateVoices() {
         ttsService?.let { service ->
             availableVoices = service.getAvailableVoices()
