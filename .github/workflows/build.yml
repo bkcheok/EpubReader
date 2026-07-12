@@ -37,18 +37,19 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Clear ALL Gradle caches
+      - name: NUCLEAR clean - remove ALL build artifacts
         run: |
           rm -rf ~/.gradle/caches
           rm -rf ~/.gradle/daemon
           rm -rf .gradle
           rm -rf app/build
           rm -rf app/.gradle
+          rm -rf build
           ./gradlew clean --no-daemon
 
       - name: PRE-COMPILATION source verification
         run: |
-          echo "=== TtsService.kt onInit (lines 210-230) ==="
+          echo "=== TtsService.kt onInit ==="
           sed -n '210,230p' app/src/main/java/com/epubreader/TtsService.kt
           echo ""
           echo "=== TtsService.kt member variables ==="
@@ -57,7 +58,7 @@ jobs:
           echo "=== TtsSettingsActivity.kt imports ==="
           head -15 app/src/main/java/com/epubreader/TtsSettingsActivity.kt
 
-      - name: Disable KSP and build Debug APK
+      - name: Build Debug APK (no cache, no daemon, fresh)
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.caching=false -Dorg.gradle.configuration-cache=false"
         run: |
@@ -67,8 +68,7 @@ jobs:
             --no-configuration-cache \
             --offline=false \
             --rerun-tasks \
-            --info \
-            -Pksp.enabled=false
+            --info
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
