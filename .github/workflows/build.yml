@@ -40,13 +40,22 @@ jobs:
       - name: Clean project (force fresh)
         run: ./gradlew clean
 
-      - name: Verify source files
+      - name: Full source verification
         run: |
-          echo "=== TtsService.kt first 80 lines ==="
-          head -80 app/src/main/java/com/epubreader/TtsService.kt
+          echo "=== TtsService.kt member variables (lines 65-85) ==="
+          sed -n '65,85p' app/src/main/java/com/epubreader/TtsService.kt
           echo ""
-          echo "=== TtsService.kt lines 235-245 ==="
-          sed -n '235,245p' app/src/main/java/com/epubreader/TtsService.kt
+          echo "=== TtsService.kt onInit method (lines 230-250) ==="
+          sed -n '230,250p' app/src/main/java/com/epubreader/TtsService.kt
+          echo ""
+          echo "=== TtsService.kt UtteranceProgressListener (lines 155-220) ==="
+          sed -n '155,220p' app/src/main/java/com/epubreader/TtsService.kt
+          echo ""
+          echo "=== TtsSettingsActivity.kt imports ==="
+          head -30 app/src/main/java/com/epubreader/TtsSettingsActivity.kt
+          echo ""
+          echo "=== TtsSettingsActivity.kt spinner adapter ==="
+          sed -n '180,195p' app/src/main/java/com/epubreader/TtsSettingsActivity.kt
 
       - name: Build Debug APK (no cache, no daemon)
         run: ./gradlew assembleDebug --no-daemon --no-build-cache --no-configuration-cache --info
