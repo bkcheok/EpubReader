@@ -150,68 +150,63 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     }
 
     private fun initTts() {
-        // Capture variables for inner class access
-        val currentSpeechRate = speechRate
-        val currentPitch = pitch
-        val currentLanguage = language
-        val currentVoiceName = voiceName
-        val currentPlaybackSpeed = playbackSpeed
+        // Capture variables for the inner class
+        val capturedThis = this
         
         tts = TextToSpeech(this, this)
         tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String) {
-                isSpeaking = true
-                isPaused = false
-                callbacks.values.forEach { it.onStartSpeaking(utteranceId) }
-                callbacks.values.forEach { it.onStateChanged(true, false) }
-                updateNotification()
+                capturedThis.isSpeaking = true
+                capturedThis.isPaused = false
+                capturedThis.callbacks.values.forEach { it.onStartSpeaking(utteranceId) }
+                capturedThis.callbacks.values.forEach { it.onStateChanged(true, false) }
+                capturedThis.updateNotification()
             }
 
             override fun onDone(utteranceId: String) {
-                isSpeaking = false
-                isPaused = false
-                callbacks.values.forEach { it.onDoneSpeaking(utteranceId) }
-                callbacks.values.forEach { it.onStateChanged(false, false) }
+                capturedThis.isSpeaking = false
+                capturedThis.isPaused = false
+                capturedThis.callbacks.values.forEach { it.onDoneSpeaking(utteranceId) }
+                capturedThis.callbacks.values.forEach { it.onStateChanged(false, false) }
                 
-                if (currentChapterIndex < chapters.size - 1) {
-                    playNextChapter()
+                if (capturedThis.currentChapterIndex < capturedThis.chapters.size - 1) {
+                    capturedThis.playNextChapter()
                 } else {
-                    stopSelf()
+                    capturedThis.stopSelf()
                 }
-                updateNotification()
+                capturedThis.updateNotification()
             }
 
             // REQUIRED abstract method - must be implemented
             override fun onError(utteranceId: String) {
-                isSpeaking = false
-                isPaused = false
-                callbacks.values.forEach { it.onError(utteranceId, TextToSpeech.ERROR) }
-                callbacks.values.forEach { it.onStateChanged(false, false) }
+                capturedThis.isSpeaking = false
+                capturedThis.isPaused = false
+                capturedThis.callbacks.values.forEach { it.onError(utteranceId, TextToSpeech.ERROR) }
+                capturedThis.callbacks.values.forEach { it.onStateChanged(false, false) }
                 Log.e(TAG, "TTS Error: utteranceId=$utteranceId")
-                updateNotification()
+                capturedThis.updateNotification()
             }
 
             @Suppress("DEPRECATION")
             override fun onError(utteranceId: String, errorCode: Int) {
-                isSpeaking = false
-                isPaused = false
-                callbacks.values.forEach { it.onError(utteranceId, errorCode) }
-                callbacks.values.forEach { it.onStateChanged(false, false) }
+                capturedThis.isSpeaking = false
+                capturedThis.isPaused = false
+                capturedThis.callbacks.values.forEach { it.onError(utteranceId, errorCode) }
+                capturedThis.callbacks.values.forEach { it.onStateChanged(false, false) }
                 Log.e(TAG, "TTS Error: $errorCode")
-                updateNotification()
+                capturedThis.updateNotification()
             }
 
-            // Non-override helper for deprecated 3-param version
             @Suppress("DEPRECATION")
             fun onError(utteranceId: String, errorCode: Int, errorMessage: String) {
                 onError(utteranceId, errorCode)
             }
 
             override fun onRangeStart(utteranceId: String, start: Int, end: Int, frame: Int) {
-                val percent = if (currentText.isNotEmpty()) {
-                    (start * 100 / currentText.length).coerceIn(0, 100)
+                val percent = if (capturedThis.currentText.isNotEmpty()) {
+                    (start * 100 / capturedThis.currentText.length).coerceIn(0, 100)
                 } else 0
-                callbacks.values.forEach { it.onProgress(utteranceId, start, end, percent) }
+                capturedThis.callbacks.values.forEach { it.onProgress(utteranceId, start, end, percent) }
             }
         })
     }
