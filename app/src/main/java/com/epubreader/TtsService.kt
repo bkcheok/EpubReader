@@ -118,7 +118,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         speechRate = prefs.getFloat(PREF_SPEECH_RATE, DEFAULT_SPEECH_RATE)
         pitch = prefs.getFloat(PREF_PITCH, DEFAULT_PITCH)
         language = prefs.getString(PREF_LANGUAGE, DEFAULT_LANGUAGE) ?: DEFAULT_LANGUAGE
-        voiceName = prefs.getString(PREF_VOICE_NAME, "")
+        voiceName = prefs.getString(PREF_VOICE_NAME)
         playbackSpeed = prefs.getFloat(PREF_PLAYBACK_SPEED, DEFAULT_PLAYBACK_SPEED)
         currentChapterIndex = prefs.getInt(PREF_CURRENT_CHAPTER, 0)
     }
@@ -150,12 +150,12 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     }
 
     private fun initTts() {
-        // Capture these for the inner class
+        // Capture variables for inner class
         val capturedSpeechRate = speechRate
         val capturedPitch = pitch
-        val capturedPlaybackSpeed = playbackSpeed
         val capturedLanguage = language
         val capturedVoiceName = voiceName
+        val capturedPlaybackSpeed = playbackSpeed
         
         tts = TextToSpeech(this, this)
         tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
@@ -188,6 +188,11 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 callbacks.values.forEach { it.onStateChanged(false, false) }
                 Log.e(TAG, "TTS Error: $errorCode")
                 updateNotification()
+            }
+
+            @Suppress("DEPRECATION")
+            override fun onError(utteranceId: String, errorCode: Int, errorMessage: String) {
+                onError(utteranceId, errorCode)
             }
 
             override fun onRangeStart(utteranceId: String, start: Int, end: Int, frame: Int) {
@@ -302,9 +307,8 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
 
     fun pauseSpeaking() {
         if (isSpeaking && !isPaused) {
-            tts?.stop()
+            tts?.pause()
             isPaused = true
-            isSpeaking = false
             callbacks.values.forEach { it.onStateChanged(isSpeaking, isPaused) }
             updateNotification()
         }
@@ -312,8 +316,10 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
 
     fun resumeSpeaking() {
         if (isPaused) {
+            tts?.resume()
             isPaused = false
-            speakCurrentChapter()
+            callbacks.values.forEach { it.onStateChanged(isSpeaking, isPaused) }
+            updateNotification()
         } else if (currentText.isNotEmpty() && !isSpeaking) {
             speakCurrentChapter()
         }
