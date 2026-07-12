@@ -1,7 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.devtools.ksp")
+    // KSP disabled for now - Room compiler via KSP causes issues
+    // id("com.google.devtools.ksp")
 }
 
 android {
@@ -73,10 +74,10 @@ dependencies {
     // Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.1")
     
-    // Room Database (for library) - using KSP
+    // Room Database (for library) - using KAPT instead of KSP for now
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
+    // ksp("androidx.room:room-compiler:2.6.1")
     
     // DataStore (for preferences)
     implementation("androidx.datastore:datastore-preferences:1.0.0")
