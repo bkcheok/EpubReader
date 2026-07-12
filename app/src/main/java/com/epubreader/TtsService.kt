@@ -153,44 +153,44 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         tts = TextToSpeech(this, this)
         tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String) {
-                isSpeaking = true
-                isPaused = false
-                callbacks.values.forEach { it.onStartSpeaking(utteranceId) }
-                callbacks.values.forEach { it.onStateChanged(true, false) }
-                updateNotification()
+                this@TtsService.isSpeaking = true
+                this@TtsService.isPaused = false
+                this@TtsService.callbacks.values.forEach { it.onStartSpeaking(utteranceId) }
+                this@TtsService.callbacks.values.forEach { it.onStateChanged(true, false) }
+                this@TtsService.updateNotification()
             }
 
             override fun onDone(utteranceId: String) {
-                isSpeaking = false
-                isPaused = false
-                callbacks.values.forEach { it.onDoneSpeaking(utteranceId) }
-                callbacks.values.forEach { it.onStateChanged(false, false) }
+                this@TtsService.isSpeaking = false
+                this@TtsService.isPaused = false
+                this@TtsService.callbacks.values.forEach { it.onDoneSpeaking(utteranceId) }
+                this@TtsService.callbacks.values.forEach { it.onStateChanged(false, false) }
                 
-                if (currentChapterIndex < chapters.size - 1) {
-                    playNextChapter()
+                if (this@TtsService.currentChapterIndex < this@TtsService.chapters.size - 1) {
+                    this@TtsService.playNextChapter()
                 } else {
-                    stopSelf()
+                    this@TtsService.stopSelf()
                 }
-                updateNotification()
+                this@TtsService.updateNotification()
             }
 
             override fun onError(utteranceId: String) {
-                isSpeaking = false
-                isPaused = false
-                callbacks.values.forEach { it.onError(utteranceId, TextToSpeech.ERROR) }
-                callbacks.values.forEach { it.onStateChanged(false, false) }
+                this@TtsService.isSpeaking = false
+                this@TtsService.isPaused = false
+                this@TtsService.callbacks.values.forEach { it.onError(utteranceId, TextToSpeech.ERROR) }
+                this@TtsService.callbacks.values.forEach { it.onStateChanged(false, false) }
                 Log.e(TAG, "TTS Error: utteranceId=$utteranceId")
-                updateNotification()
+                this@TtsService.updateNotification()
             }
 
             @Suppress("DEPRECATION")
             override fun onError(utteranceId: String, errorCode: Int) {
-                isSpeaking = false
-                isPaused = false
-                callbacks.values.forEach { it.onError(utteranceId, errorCode) }
-                callbacks.values.forEach { it.onStateChanged(false, false) }
+                this@TtsService.isSpeaking = false
+                this@TtsService.isPaused = false
+                this@TtsService.callbacks.values.forEach { it.onError(utteranceId, errorCode) }
+                this@TtsService.callbacks.values.forEach { it.onStateChanged(false, false) }
                 Log.e(TAG, "TTS Error: $errorCode")
-                updateNotification()
+                this@TtsService.updateNotification()
             }
 
             @Suppress("DEPRECATION")
@@ -199,10 +199,10 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             }
 
             override fun onRangeStart(utteranceId: String, start: Int, end: Int, frame: Int) {
-                val percent = if (currentText.isNotEmpty()) {
-                    (start * 100 / currentText.length).coerceIn(0, 100)
+                val percent = if (this@TtsService.currentText.isNotEmpty()) {
+                    (start * 100 / this@TtsService.currentText.length).coerceIn(0, 100)
                 } else 0
-                callbacks.values.forEach { it.onProgress(utteranceId, start, end, percent) }
+                this@TtsService.callbacks.values.forEach { it.onProgress(utteranceId, start, end, percent) }
             }
         })
     }
@@ -276,7 +276,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     }
 
     fun setChapters(chapters: List<EpubBook>) {
-        this.chapters = chapters.flatMap { it.flattenedChapters }
+        this@TtsService.chapters = chapters.flatMap { it.flattenedChapters }
     }
 
     fun setCurrentChapter(index: Int) {
