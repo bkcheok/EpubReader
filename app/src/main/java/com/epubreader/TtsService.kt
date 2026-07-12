@@ -118,7 +118,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         speechRate = prefs.getFloat(PREF_SPEECH_RATE, DEFAULT_SPEECH_RATE)
         pitch = prefs.getFloat(PREF_PITCH, DEFAULT_PITCH)
         language = prefs.getString(PREF_LANGUAGE, DEFAULT_LANGUAGE) ?: DEFAULT_LANGUAGE
-        voiceName = prefs.getString(PREF_VOICE_NAME, null)
+        voiceName = prefs.getString(PREF_VOICE_NAME)
         playbackSpeed = prefs.getFloat(PREF_PLAYBACK_SPEED, DEFAULT_PLAYBACK_SPEED)
         currentChapterIndex = prefs.getInt(PREF_CURRENT_CHAPTER, 0)
     }
@@ -183,6 +183,12 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 updateNotification()
             }
 
+            override fun onError(utteranceId: String, errorCode: Int, errorMessage: String) {
+                isSpeaking = false
+                isPaused = false
+                callbacks.values.forEach { it.onError(utteranceId, errorCode) }
+                callbacks.values.forEach { it.onStateChanged(false, false) }
+                Log.e(TAG, "TTS Error: $errorCode - $errorMessage")
                 updateNotification()
             }
 
