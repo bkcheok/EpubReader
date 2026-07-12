@@ -3,7 +3,7 @@ name: Build APK
 on:
   push:
     branches: [main, master]
-  workflow_dispatch:
+  workflow_dispatch:  # Allows manual trigger
 
 jobs:
   build:
@@ -34,8 +34,11 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon
+      - name: Clean build (cache bust)
+        run: ./gradlew clean
+
+      - name: Build Debug APK (no cache)
+        run: ./gradlew assembleDebug --no-daemon --no-build-cache
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
