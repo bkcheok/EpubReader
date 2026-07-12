@@ -299,8 +299,9 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
 
     fun pauseSpeaking() {
         if (isSpeaking && !isPaused) {
-            tts?.pause()
+            tts?.stop()
             isPaused = true
+            isSpeaking = false
             callbacks.values.forEach { it.onStateChanged(isSpeaking, isPaused) }
             updateNotification()
         }
@@ -308,10 +309,8 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
 
     fun resumeSpeaking() {
         if (isPaused) {
-            tts?.resume()
             isPaused = false
-            callbacks.values.forEach { it.onStateChanged(isSpeaking, isPaused) }
-            updateNotification()
+            speakCurrentChapter()
         } else if (currentText.isNotEmpty() && !isSpeaking) {
             speakCurrentChapter()
         }
