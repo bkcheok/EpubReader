@@ -37,10 +37,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.NavigationUI
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
@@ -48,9 +44,6 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 class MainActivity : AppCompatActivity() {
-
-    private lateinit var navController: NavController
-    private lateinit var appBarConfiguration: AppBarConfiguration
 
     private lateinit var webView: WebView
     private lateinit var webProgressBar: ProgressBar
@@ -87,7 +80,6 @@ class MainActivity : AppCompatActivity() {
 
         setupToolbar()
         setupDrawer()
-        setupNavigation()
         setupWebView()
         setupTtsBottomSheet()
         setupFab()
@@ -109,11 +101,6 @@ class MainActivity : AppCompatActivity() {
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         val navView: NavigationView = findViewById(R.id.nav_view)
 
-        appBarConfiguration = AppBarConfiguration(
-            setOf(R.id.nav_library, R.id.nav_recent, R.id.nav_tts, R.id.nav_settings),
-            drawerLayout
-        )
-
         val toggle = androidx.appcompat.app.ActionBarDrawerToggle(
             this, drawerLayout, findViewById(R.id.toolbar),
             R.string.navigation_drawer_open, R.string.navigation_drawer_close
@@ -123,21 +110,15 @@ class MainActivity : AppCompatActivity() {
 
         navView.setNavigationItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_library -> navController.navigate(R.id.nav_library)
-                R.id.nav_recent -> navController.navigate(R.id.nav_recent)
-                R.id.nav_tts -> navController.navigate(R.id.nav_tts)
-                R.id.nav_settings -> navController.navigate(R.id.nav_settings)
+                R.id.nav_library -> openFilePicker()
+                R.id.nav_recent -> Toast.makeText(this, "Recent books", Toast.LENGTH_SHORT).show()
+                R.id.nav_tts -> openTtsSettings()
+                R.id.nav_settings -> startActivity(Intent(this, SettingsActivity::class.java))
                 R.id.nav_about -> showAboutDialog()
             }
             drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
-    }
-
-    private fun setupNavigation() {
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        navController = navHostFragment.navController
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration)
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -254,63 +235,71 @@ class MainActivity : AppCompatActivity() {
             currentBook = book
             currentChapterIndex = 0
             displayChapter(0)
-            updateTtsService()
-            addToLibrary(book)
+            supportActionBar?.title = book.title
+            
+            // Bind to TTS service
+            if (!isBound) {
+                bindService(Intent(this, TtsService::class.java), serviceConnection, Context.BIND_AUTO_CREATE)
+                isBound = true
+            }
         } catch (e: Exception) {
-            Log.e("MainActivity", "Failed to load EPUB", e)
-            Toast.makeText(this, "Failed to load EPUB: ${e.message}", Toast.LENGTH_LONG).show()
-        } finally {
+            Log.e("MainActivity", "Error loading EPUB", e)
+            Toast.makeText(this, "Error loading EPUB: ${e.message}", Toast.LENGTH_LONG).show()
             webProgressBar.visibility = View.GONE
         }
     }
 
     private fun displayChapter(index: Int) {
-        currentBook?.getChapterAt(index)?.let { chapter ->
-            currentChapterIndex = index
-            val htmlContent = chapter.content
-            webView.loadDataWithBaseURL(null, htmlContent, "text/html", "UTF-8", null)
-            supportActionBar?.title = chapter.title
+        currentBook?.let { book ->
+            if (index in book.chapters.indices) {
+                currentChapterIndex = index
+                val chapter = book.chapters[index]
+                webView.loadDataWithBaseURL("epub://", chapter.content, "text/html", "UTF-8", null)
+                supportActionBar?.subtitle = chapter.title
+            }
         }
     }
 
     private fun applyReadingSettings() {
+        val settings = webView.settings
+        settings.textZoom = (epubSettings.fontSize * 6.25).toInt()
+        
         val js = """
             javascript:(function() {
                 document.body.style.fontSize = '${epubSettings.fontSize}px';
                 document.body.style.lineHeight = '${epubSettings.lineHeight}';
                 document.body.style.margin = '${epubSettings.margin}px';
                 document.body.style.fontFamily = '${epubSettings.fontFamily}';
-                document.body.style.textAlign = '${epubSettings.textAlign.name.toLowerCase()}';
-                document.body.className = document.body.className.replace(/theme-\\w+/g, '');
-                document.body.classList.add('theme-${epubSettings.theme.name.toLowerCase()}');
+                document.body.style.textAlign = '${epubSettings.textAlign.toString().toLowerCase()}';
+                document.body.classList.remove('dark', 'sepia');
+                when ('${epubSettings.theme}') {
+                    'DARK' -> document.body.classList.add('dark')
+                    'SEPIA' -> document.body.classList.add('sepia')
+                }
             })()
         """
-        webView.evaluateJavascript(js, null)
+        webView.evaluateJavascript(js) { _ -> }
     }
 
     private fun updateChapterProgress() {
         // Update reading progress in database
     }
 
-    private fun updateTtsService() {
+    private fun toggleTts() {
         ttsService?.let { service ->
-            currentBook?.let { book ->
-                service.setChapters(listOf(book))
-                service.setCurrentChapter(currentChapterIndex)
+            if (service.isCurrentlySpeaking() && !service.isCurrentlyPaused()) {
+                service.pauseSpeaking()
+                updateTtsButtons(false)
+            } else {
+                service.resumeSpeaking()
+                updateTtsButtons(true)
             }
         }
     }
 
-    private fun addToLibrary(book: EpubBook) {
-        // Add to Room database
-    }
-
-    private fun toggleTts() {
-        ttsService?.togglePlayPause()
-    }
-
     private fun stopTts() {
         ttsService?.stopSpeaking()
+        updateTtsButtons(false)
     }
 
     private fun previousChapter() {
@@ -325,45 +314,91 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this, TtsSettingsActivity::class.java))
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        return NavigationUI.navigateUp(navController, appBarConfiguration) || super.onSupportNavigateUp()
+    private fun updateTtsButtons(isPlaying: Boolean) {
+        val playPauseBtn = findViewById<ImageButton>(R.id.btn_tts_play_pause)
+        playPauseBtn.setImageResource(if (isPlaying) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play)
     }
 
-    override fun onDestroy() {
-        if (isBound) {
-            unbindService(serviceConnection)
-            isBound = false
-        }
-        super.onDestroy()
+    private fun showAboutDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("About EPUB Reader")
+            .setMessage("EPUB Reader with TTS support for English and Chinese.\nVersion 1.0")
+            .setPositiveButton("OK", null)
+            .show()
     }
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
             val binder = service as TtsService.LocalBinder
             ttsService = binder.getService()
-            isBound = true
-            updateTtsService()
+            
+            ttsCallbackId = ttsService?.registerCallback(object : TtsService.TtsCallback {
+                override fun onInit(success: Boolean) {
+                    if (success) {
+                        currentBook?.let { book ->
+                            ttsService?.setChapters(listOf(book))
+                            ttsService?.setCurrentChapter(currentChapterIndex)
+                        }
+                    }
+                }
+                override fun onStartSpeaking(utteranceId: String) {
+                    runOnUiThread { updateTtsButtons(true) }
+                }
+                override fun onDoneSpeaking(utteranceId: String) {
+                    runOnUiThread { updateTtsButtons(false) }
+                }
+                override fun onError(utteranceId: String, errorCode: Int) {
+                    runOnUiThread { updateTtsButtons(false) }
+                }
+                override fun onProgress(utteranceId: String, start: Int, end: Int, percent: Int) {}
+                override fun onChapterChanged(chapterIndex: Int, chapterTitle: String) {
+                    runOnUiThread { 
+                        currentChapterIndex = chapterIndex
+                        displayChapter(chapterIndex)
+                    }
+                }
+                override fun onStateChanged(isSpeaking: Boolean, isPaused: Boolean) {
+                    runOnUiThread { updateTtsButtons(isSpeaking && !isPaused) }
+                }
+            }) ?: -1
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
-            isBound = false
             ttsService = null
         }
     }
 
-    private fun showAboutDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("EPUB Reader")
-            .setMessage("Version 1.0\n\nA modern EPUB reader with TTS support for Chinese and English.")
-            .setPositiveButton("OK", null)
-            .show()
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
+            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START)
+            } else {
+                drawerLayout.openDrawer(GravityCompat.START)
+            }
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
-    // JavaScript interface
-    inner class WebAppInterface(private val context: Context) {
+    override fun onDestroy() {
+        if (isBound) {
+            ttsService?.unregisterCallback(ttsCallbackId)
+            unbindService(serviceConnection)
+            isBound = false
+        }
+        super.onDestroy()
+    }
+
+    class WebAppInterface(private val activity: MainActivity) {
         @android.webkit.JavascriptInterface
-        fun showToast(message: String) {
-            runOnUiThread { Toast.makeText(context, message, Toast.LENGTH_SHORT).show() }
+        fun scrollToProgress(progress: Float) {
+            activity.runOnUiThread {
+                activity.currentBook?.let { book ->
+                    val progress = book.chapters.getOrNull(activity.currentChapterIndex)
+                    // Save progress
+                }
+            }
         }
     }
 }

@@ -65,12 +65,12 @@ class EpubParser(private val context: Context) {
             val opfDoc = Jsoup.parse(opfContent, "", org.jsoup.parser.Parser.xmlParser())
 
             val metadata = opfDoc.select("metadata").first()
-            val title = metadata?.select("dc\\:title, title").first()?.text() ?: file.nameWithoutExtension
-            val author = metadata?.select("dc\\:creator, creator").first()?.text() ?: "Unknown Author"
-            val language = metadata?.select("dc\\:language, language").first()?.text() ?: "en"
-            val identifier = metadata?.select("dc\\:identifier, identifier").first()?.text() ?: file.name
-            val publisher = metadata?.select("dc\\:publisher, publisher").first()?.text() ?: ""
-            val description = metadata?.select("dc\\:description, description").first()?.text() ?: ""
+            val title = metadata?.select("dc\\:title, title")?.first()?.text() ?: file.nameWithoutExtension
+            val author = metadata?.select("dc\\:creator, creator")?.first()?.text() ?: "Unknown Author"
+            val language = metadata?.select("dc\\:language, language")?.first()?.text() ?: "en"
+            val identifier = metadata?.select("dc\\:identifier, identifier")?.first()?.text() ?: file.name
+            val publisher = metadata?.select("dc\\:publisher, publisher")?.first()?.text() ?: ""
+            val description = metadata?.select("dc\\:description, description")?.first()?.text() ?: ""
 
             val manifestItems = mutableMapOf<String, ManifestItem>()
             opfDoc.select("manifest item").forEach { item ->
