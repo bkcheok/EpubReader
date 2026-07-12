@@ -184,12 +184,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             }
 
             override fun onError(utteranceId: String, errorCode: Int, errorMessage: String) {
-                isSpeaking = false
-                isPaused = false
-                callbacks.values.forEach { it.onError(utteranceId, errorCode) }
-                callbacks.values.forEach { it.onStateChanged(false, false) }
-                Log.e(TAG, "TTS Error: $errorCode - $errorMessage")
-                updateNotification()
+                onError(utteranceId, errorCode)
             }
 
             override fun onRangeStart(utteranceId: String, start: Int, end: Int, frame: Int) {

@@ -185,7 +185,7 @@ class TtsSettingsActivity : AppCompatActivity() {
                     "${voice.name} (${locale.toLanguageTag()}) ${if (voice.quality == TextToSpeech.Voice.QUALITY_HIGH) "⭐" else if (voice.quality == TextToSpeech.Voice.QUALITY_NORMAL) "★" else ""}"
                 }.toTypedArray()
                 
-                val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, voiceNames)
+                val adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, voiceNames)
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 findViewById<Spinner>(R.id.spinner_voice).adapter = adapter
                 
