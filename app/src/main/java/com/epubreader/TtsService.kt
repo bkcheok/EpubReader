@@ -236,8 +236,8 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                     tts?.setVoice(voice)
                 }
             }
-            tts?.speechRate = speechRate * playbackSpeed
-            tts?.pitch = pitch
+            tts?.speechRate = this@TtsService.speechRate * playbackSpeed
+            tts?.pitch = this@TtsService.pitch
             callbacks.values.forEach { it.onInit(true) }
         } else {
             isInitialized = false
@@ -380,13 +380,13 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
 
     fun setSpeechRate(rate: Float) {
         speechRate = rate.coerceIn(0.1f, 3.0f)
-        tts?.speechRate = speechRate * playbackSpeed
+        tts?.speechRate = this@TtsService.speechRate * playbackSpeed
         savePreferences()
     }
 
     fun setPitch(pitchValue: Float) {
         pitch = pitchValue.coerceIn(0.1f, 2.0f)
-        tts?.pitch = pitch
+        tts?.pitch = this@TtsService.pitch
         savePreferences()
     }
 
@@ -409,7 +409,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
 
     fun setPlaybackSpeed(speed: Float) {
         playbackSpeed = speed.coerceIn(0.25f, 3.0f)
-        tts?.speechRate = speechRate * playbackSpeed
+        tts?.speechRate = this@TtsService.speechRate * playbackSpeed
         savePreferences()
     }
 

@@ -1,6 +1,7 @@
 package com.epubreader
 
 import android.content.Intent
+import android.speech.tts.Voice
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.view.View
