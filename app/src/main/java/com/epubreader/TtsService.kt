@@ -195,7 +195,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             }
 
             @Suppress("DEPRECATION")
-            override fun onError(utteranceId: String, errorCode: Int, errorMessage: String) {
+            fun onError(utteranceId: String, errorCode: Int, errorMessage: String) {
                 onError(utteranceId, errorCode)
             }
 
