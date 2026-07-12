@@ -15,6 +15,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          clean: true
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -34,11 +37,19 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Clean project
+      - name: Clean project (force fresh)
         run: ./gradlew clean
 
+      - name: Verify source files
+        run: |
+          echo "=== TtsService.kt first 80 lines ==="
+          head -80 app/src/main/java/com/epubreader/TtsService.kt
+          echo ""
+          echo "=== TtsService.kt lines 235-245 ==="
+          sed -n '235,245p' app/src/main/java/com/epubreader/TtsService.kt
+
       - name: Build Debug APK (no cache, no daemon)
-        run: ./gradlew assembleDebug --no-daemon --no-build-cache --no-configuration-cache
+        run: ./gradlew assembleDebug --no-daemon --no-build-cache --no-configuration-cache --info
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
