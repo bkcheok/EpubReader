@@ -150,51 +150,47 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     }
 
     private fun initTts() {
-        // Capture variables for the inner class
-        val capturedThis = this
-        
         tts = TextToSpeech(this, this)
         tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String) {
-                capturedThis.isSpeaking = true
-                capturedThis.isPaused = false
-                capturedThis.callbacks.values.forEach { it.onStartSpeaking(utteranceId) }
-                capturedThis.callbacks.values.forEach { it.onStateChanged(true, false) }
-                capturedThis.updateNotification()
+                isSpeaking = true
+                isPaused = false
+                callbacks.values.forEach { it.onStartSpeaking(utteranceId) }
+                callbacks.values.forEach { it.onStateChanged(true, false) }
+                updateNotification()
             }
 
             override fun onDone(utteranceId: String) {
-                capturedThis.isSpeaking = false
-                capturedThis.isPaused = false
-                capturedThis.callbacks.values.forEach { it.onDoneSpeaking(utteranceId) }
-                capturedThis.callbacks.values.forEach { it.onStateChanged(false, false) }
+                isSpeaking = false
+                isPaused = false
+                callbacks.values.forEach { it.onDoneSpeaking(utteranceId) }
+                callbacks.values.forEach { it.onStateChanged(false, false) }
                 
-                if (capturedThis.currentChapterIndex < capturedThis.chapters.size - 1) {
-                    capturedThis.playNextChapter()
+                if (currentChapterIndex < chapters.size - 1) {
+                    playNextChapter()
                 } else {
-                    capturedThis.stopSelf()
+                    stopSelf()
                 }
-                capturedThis.updateNotification()
+                updateNotification()
             }
 
-            // REQUIRED abstract method - must be implemented
             override fun onError(utteranceId: String) {
-                capturedThis.isSpeaking = false
-                capturedThis.isPaused = false
-                capturedThis.callbacks.values.forEach { it.onError(utteranceId, TextToSpeech.ERROR) }
-                capturedThis.callbacks.values.forEach { it.onStateChanged(false, false) }
+                isSpeaking = false
+                isPaused = false
+                callbacks.values.forEach { it.onError(utteranceId, TextToSpeech.ERROR) }
+                callbacks.values.forEach { it.onStateChanged(false, false) }
                 Log.e(TAG, "TTS Error: utteranceId=$utteranceId")
-                capturedThis.updateNotification()
+                updateNotification()
             }
 
             @Suppress("DEPRECATION")
             override fun onError(utteranceId: String, errorCode: Int) {
-                capturedThis.isSpeaking = false
-                capturedThis.isPaused = false
-                capturedThis.callbacks.values.forEach { it.onError(utteranceId, errorCode) }
-                capturedThis.callbacks.values.forEach { it.onStateChanged(false, false) }
+                isSpeaking = false
+                isPaused = false
+                callbacks.values.forEach { it.onError(utteranceId, errorCode) }
+                callbacks.values.forEach { it.onStateChanged(false, false) }
                 Log.e(TAG, "TTS Error: $errorCode")
-                capturedThis.updateNotification()
+                updateNotification()
             }
 
             @Suppress("DEPRECATION")
@@ -203,10 +199,10 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             }
 
             override fun onRangeStart(utteranceId: String, start: Int, end: Int, frame: Int) {
-                val percent = if (capturedThis.currentText.isNotEmpty()) {
-                    (start * 100 / capturedThis.currentText.length).coerceIn(0, 100)
+                val percent = if (currentText.isNotEmpty()) {
+                    (start * 100 / currentText.length).coerceIn(0, 100)
                 } else 0
-                capturedThis.callbacks.values.forEach { it.onProgress(utteranceId, start, end, percent) }
+                callbacks.values.forEach { it.onProgress(utteranceId, start, end, percent) }
             }
         })
     }
