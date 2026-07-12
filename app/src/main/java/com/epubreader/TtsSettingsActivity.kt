@@ -176,7 +176,7 @@ class TtsSettingsActivity : AppCompatActivity() {
             availableVoices = service.getAvailableVoices()
             
             if (availableVoices.isEmpty()) {
-                val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf("No voices available"))
+                val adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, arrayOf("No voices available"))
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 findViewById<Spinner>(R.id.spinner_voice).adapter = adapter
             } else {
