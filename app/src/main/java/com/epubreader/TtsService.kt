@@ -183,15 +183,6 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 updateNotification()
             }
 
-            override fun onError(utteranceId: String, errorCode: Int, errorMessage: String) {
-                isSpeaking = false
-                isPaused = false
-                callbacks.values.forEach { it.onError(utteranceId, errorCode) }
-                callbacks.values.forEach { it.onStateChanged(false, false) }
-                Log.e(TAG, "TTS Error: $errorCode - $errorMessage")
-                updateNotification()
-            }
-
             override fun onRangeStart(utteranceId: String, start: Int, end: Int, frame: Int) {
                 val percent = if (currentText.isNotEmpty()) {
                     (start * 100 / currentText.length).coerceIn(0, 100)

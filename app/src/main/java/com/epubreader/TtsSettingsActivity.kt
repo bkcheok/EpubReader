@@ -17,6 +17,8 @@ class TtsSettingsActivity : AppCompatActivity() {
 
     private var ttsService: TtsService? = null
     private var isBound = false
+    private var availableVoices: List<TextToSpeech.Voice> = emptyList()
+    private var currentVoiceIndex = 0
 
     private val serviceConnection = object : android.content.ServiceConnection {
         override fun onServiceConnected(name: android.content.ComponentName, service: android.os.IBinder) {
@@ -115,12 +117,10 @@ class TtsSettingsActivity : AppCompatActivity() {
         findViewById<Spinner>(R.id.spinner_voice).adapter = voiceAdapter
         findViewById<Spinner>(R.id.spinner_voice).onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                ttsService?.let { service ->
-                    val voices = service.getAvailableVoices()
-                    if (voices.isNotEmpty() && position < voices.size) {
-                        val voice = voices[position]
-                        service.setVoice(voice.name)
-                    }
+                if (availableVoices.isNotEmpty() && position < availableVoices.size) {
+                    val voice = availableVoices[position]
+                    ttsService?.setVoice(voice.name)
+                    currentVoiceIndex = position
                 }
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -171,9 +171,12 @@ class TtsSettingsActivity : AppCompatActivity() {
         }
     }
 
+    private var availableVoices: List<TextToSpeech.Voice> = emptyList()
+    private var currentVoiceIndex = 0
+    
     private fun populateVoices() {
         ttsService?.let { service ->
-            val availableVoices = service.getAvailableVoices()
+            availableVoices = service.getAvailableVoices()
             
             if (availableVoices.isEmpty()) {
                 val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf("No voices available"))
